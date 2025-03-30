@@ -12,8 +12,8 @@ class TrashCollection(Model):
             height = 20,
             nr_of_people = 4,
             trash_spawn_rate = 0,
-            people_speed = 0,
-            robot_speed = 0,
+            people_max_speed = 0,
+            robot_max_speed = 0,
             seed = None
         ):
 
@@ -24,7 +24,7 @@ class TrashCollection(Model):
 
         # Create a continuous space
         dimensions = [[0, width], [0, height]]
-        rng = random.Random(42)
+        rng = random.Random(seed)
         self.space = ContinuousSpace(dimensions, torus=False, random=rng)
 
         # Create robot
@@ -43,12 +43,12 @@ class TrashCollection(Model):
             space=self.space
         )
 
+        # Make the model running
+        self.running = True
+
 
     def step(self):
         # First activate all the people
         self.agents_by_type[Human].shuffle_do("step")
         # Then activate the robot
         self.agents_by_type[Robot].do("step")
-
-trash_collection = TrashCollection()
-trash_collection.step()
