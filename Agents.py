@@ -26,6 +26,7 @@ class Robot(ContinuousSpaceAgent):
         self.max_energy = max_energy
         # Maximum speed of the robot
         self.max_speed = max_speed
+        self.max_sweep_speed = 0.2 * max_speed
         # Initial fullness and capacity of the robot
         self.fullness = 0
         self.capacity = capacity
@@ -38,10 +39,24 @@ class Robot(ContinuousSpaceAgent):
     def step(self):
         print(f"I am a robot {self.unique_id} at {self.position[0]}, {self.position[1]}")
 
-    def move(self, speed):
+    """One step of robot movement. The robot turns up to maximum allowed rotation towards target position and moves
+    forward with given speed.
+    
+    Args:
+        speed: Speed with which the robot moves
+        position: Position towards which robot rotates and moves 
+    """
+    def move(self, speed, position):
         print("Robot is moving")
 
-    def sweep(self):
+    """Remove all the trash one step behind the robot considering that robot was moving with given speed.
+    If robot was moving with the speed more than the max_sweep_speed, sweeping doesn't occur and an error
+    message is printed.
+    
+    Args:
+        speed: Speed with which the robot moved in current step
+    """
+    def sweep(self, speed):
         print("Robot is sweeping")
 
     def charge(self):
