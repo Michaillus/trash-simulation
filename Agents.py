@@ -26,6 +26,7 @@ class Robot(ContinuousSpaceAgent):
         self.max_energy = max_energy
         # Maximum speed of the robot
         self.max_speed = max_speed
+        # Maximum speed of the robot when it is sweeping
         self.max_sweep_speed = 0.2 * max_speed
         # Initial fullness and capacity of the robot
         self.fullness = 0
