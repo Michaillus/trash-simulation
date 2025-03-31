@@ -3,6 +3,7 @@ import random
 
 from mesa.experimental.continuous_space.continuous_space_agents import ContinuousSpaceAgent
 
+# Robot agent that moves along the street and sweeps trash
 class Robot(ContinuousSpaceAgent):
     """Initialize the robot
 
@@ -46,6 +47,7 @@ class Robot(ContinuousSpaceAgent):
     def charge(self):
         print("Robot is charging")
 
+# Human agent that walks on the street and litters
 class Human(ContinuousSpaceAgent):
     """Initialize a human agent.
 
@@ -118,6 +120,7 @@ class Human(ContinuousSpaceAgent):
             y_coord=self.position[1]
         )
 
+# Trash of different size that lies on the street
 class Trash(ContinuousSpaceAgent):
     """Initializes a trash spot.
 
@@ -133,8 +136,9 @@ class Trash(ContinuousSpaceAgent):
         # Coordinates of the trash spot
         self.position[0] = x_coord
         self.position[1] = y_coord
-        # Size of the trash spot
+        # Size of the trash spot. One unit of trash can be considered as one cup or food packaging
         self.size = 1
 
+    # Increase amount of trash in the spot by one unit
     def increase(self):
         self.size += 1
