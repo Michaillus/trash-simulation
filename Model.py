@@ -10,10 +10,12 @@ class TrashCollection(Model):
             self,
             width = 100,
             height = 20,
+            robot_max_energy = 100,
+            robot_max_speed = 10,
+            robot_capacity = 100,
             nr_of_people = 4,
-            trash_spawn_rate = 0,
-            people_max_speed = 0,
-            robot_max_speed = 0,
+            human_speed = 0,
+            human_littering_rate = 0,
             seed = None
         ):
 
@@ -32,15 +34,18 @@ class TrashCollection(Model):
             self,
             1,
             space=self.space,
-            initial_x=10,
-            initial_y=10
+            max_energy=robot_max_energy,
+            max_speed=robot_max_speed,
+            capacity=robot_capacity,
         )
 
         # Create people
         Human.create_agents(
             self,
             nr_of_people,
-            space=self.space
+            space=self.space,
+            speed=human_speed,
+            littering_rate=human_littering_rate,
         )
 
         # Make the model running
