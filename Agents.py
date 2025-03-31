@@ -1,7 +1,7 @@
 import math
 import random
 
-from mesa.experimental.continuous_space.continuous_space_agents import ContinuousSpaceAgent
+from mesa.experimental.continuous_space.continuous_space_agents import ContinuousSpace, ContinuousSpaceAgent
 
 # Robot agent that moves along the street and sweeps trash
 class Robot(ContinuousSpaceAgent):
@@ -14,7 +14,11 @@ class Robot(ContinuousSpaceAgent):
         max_speed: Maximum speed that the robot can attain
         capacity: Number of trash units that the robot can fit
     """
-    def __init__(self, model, space, max_energy = 100, max_speed = 10, capacity = 100):
+    def __init__(self, model,
+                 space: ContinuousSpace,
+                 max_energy = 100,
+                 max_speed = 10,
+                 capacity = 100):
         super().__init__(space, model)
 
         # Initial position of the robot
@@ -36,9 +40,15 @@ class Robot(ContinuousSpaceAgent):
         self.direction = 90
         self.max_rotation = 360
 
+        # Time passed since the start of a cleaning loop in seconds
+        self.time_passed = 0
+        # Expected time it should take to finish a cleaning loop in seconds
+        self.expected_time = (1 + 0.05 * model.nr_of_people) * space.width / max_speed
+
     # Actions of the robot on each step of the model
     def step(self):
         print(f"I am a robot {self.unique_id} at {self.position[0]}, {self.position[1]}")
+        self.time_passed += 1
 
     """One step of robot movement. The robot turns up to maximum allowed rotation towards target position and moves
     forward with given speed.
@@ -73,7 +83,10 @@ class Human(ContinuousSpaceAgent):
         speed: The human speed in distance covered per 100 steps
         littering_rate: Rate with which a human litters in number of trash units thrown per 1000 steps
     """
-    def __init__(self, model, space, speed = 5, littering_rate = 0.5):
+    def __init__(self, model,
+                 space: ContinuousSpace,
+                 speed = 5,
+                 littering_rate = 5):
         super().__init__(space, model)
 
         # Initial position of the human
