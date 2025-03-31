@@ -76,32 +76,50 @@ model_params = {
         "step": 1,
     },
 
-    "trash_spawn_rate": {
-        "type": "SliderFloat",
-        "value": 0.1,
-        "label": "Trash spawn rate",
-        "min": 0,
-        "max": 10,
-        "step": 0.1,
+    "human_speed": {
+        "type": "SliderInt",
+        "value": 10,
+        "label": "Speed with which people move",
+        "min": 1,
+        "max": 50,
+        "step": 1,
     },
 
-    "people_max_speed": {
-        "type": "SliderFloat",
+    "human_littering_rate": {
+        "type": "SliderInt",
         "value": 5,
-        "label": "Maximum speed of people",
+        "label": "People littering rate",
         "min": 0,
-        "max": 10,
-        "step": 0.1,
+        "max": 100,
+        "step": 1,
+    },
+
+    "robot_max_energy": {
+        "type": "SliderInt",
+        "value": 100,
+        "label": "Maximum energy of robot",
+        "min": 0,
+        "max": 1000,
+        "step": 1,
     },
 
     "robot_max_speed": {
-        "type": "SliderFloat",
-        "value": 5,
+        "type": "SliderInt",
+        "value": 10,
         "label": "Maximum speed of robot",
         "min": 0,
-        "max": 15,
-        "step": 0.1,
-    }
+        "max": 50,
+        "step": 1,
+    },
+
+    "robot_capacity": {
+        "type": "SliderInt",
+        "value": 100,
+        "label": "Capacity of robot",
+        "min": 0,
+        "max": 1000,
+        "step": 1,
+    },
 }
 
 # Create an instance of the model

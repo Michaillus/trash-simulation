@@ -10,12 +10,12 @@ class TrashCollection(Model):
             self,
             width = 100,
             height = 20,
-            robot_max_energy = 100,
-            robot_max_speed = 10,
-            robot_capacity = 100,
             nr_of_people = 4,
             human_speed = 0,
             human_littering_rate = 0,
+            robot_max_energy = 100,
+            robot_max_speed = 10,
+            robot_capacity = 100,
             seed = None
         ):
 
