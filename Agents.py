@@ -53,7 +53,7 @@ class Human(ContinuousSpaceAgent):
         model: A mesa model
         space: Continuous space that the human is part of
         speed: The human speed in distance covered per 100 steps
-        littering_rate: Rate with which a human litters in number of trash units thrown per 100 steps
+        littering_rate: Rate with which a human litters in number of trash units thrown per 1000 steps
     """
     def __init__(self, model, space, speed = 5, littering_rate = 0.5):
         super().__init__(space, model)
@@ -73,7 +73,7 @@ class Human(ContinuousSpaceAgent):
 
     def step(self):
         self.move(self.speed)
-        if random.uniform(0, 1) < self.littering_rate / 100:
+        if random.uniform(0, 1) < self.littering_rate / 1000:
             self.litter()
 
     def move(self, speed):
@@ -86,18 +86,26 @@ class Human(ContinuousSpaceAgent):
 
         # Update x coordinate
         new_x = self.position[0] + x_disp * speed / 100
-        new_x = max(new_x, 0)
-        new_x = min(new_x, self.space.width)
+        if new_x < 0:
+            new_x = 0
+            self.direction = 180 - self.direction
+        if new_x > self.space.width:
+            new_x = self.space.width
+            self.direction = 180 - self.direction
         self.position[0] = new_x
 
         # Update y coordinate
         new_y = self.position[1] + y_disp * speed / 100
-        new_y = max(new_y, 0)
-        new_y = min(new_y, self.space.height)
+        if new_y < 0:
+            new_y = 0
+            self.direction = - self.direction
+        if new_y > self.space.height:
+            new_y = self.space.height
+            self.direction = - self.direction
         self.position[1] = new_y
 
         # Update direction
-        self.direction += random.uniform(-2*self.average_rotation, 2*self.average_rotation)
+        self.direction = (self.direction + random.uniform(-2*self.average_rotation, 2*self.average_rotation) + 360) % 360
 
     def litter(self):
         # TODO: Write a proper littering function that makes people throw trash in an existing pile if there is one nearby
@@ -105,8 +113,9 @@ class Human(ContinuousSpaceAgent):
         Trash.create_agents(
             self.model,
             1,
-            self.position[0],
-            self.position[1]
+            space=self.space,
+            x_coord=self.position[0],
+            y_coord=self.position[1]
         )
 
 class Trash(ContinuousSpaceAgent):
@@ -118,12 +127,12 @@ class Trash(ContinuousSpaceAgent):
         x_coord: X coordinate of the trash
         y_coord: Y coordinate of the trash
     """
-    def __init__(self, space, model, x_coord, y_coord):
+    def __init__(self, model, space, x_coord, y_coord):
         super().__init__(space, model)
 
         # Coordinates of the trash spot
-        self.x_coord = x_coord
-        self.y_coord = y_coord
+        self.position[0] = x_coord
+        self.position[1] = y_coord
         # Size of the trash spot
         self.size = 1
 

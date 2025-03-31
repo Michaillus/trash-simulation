@@ -31,7 +31,7 @@ def trash_collection_portrayal(agent):
     # For now each trash spot is a grey triangle
     if isinstance(agent, Trash):
         portrayal["color"] = "tab:grey"
-        portrayal["marker"] = "o"
+        portrayal["marker"] = "x"
 
     return portrayal
 
