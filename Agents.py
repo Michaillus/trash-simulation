@@ -8,7 +8,15 @@ WEST = 180
 
 DIST_FROM_EDGE = 1
 
-X_COORD_OFFSET = 10
+LITTER_SEEK_RADIUS = 3
+NR_OF_TRASH_SPOTS = 20
+
+PERSONAL_SPACE_RADIUS = 2.5
+TIME_TO_PRODUCE_TRASH = 5
+
+MEDIUM_TRASH = 4
+BIG_TRASH = 10
+
 
 # Robot agent that moves along the street and sweeps trash
 class Robot(ContinuousSpaceAgent):
@@ -100,9 +108,9 @@ class Human(ContinuousSpaceAgent):
                  littering_rate = 1,
                  ):
         super().__init__(space, model)
+        self.X_COORD_OFFSET = self.space.width // 5
 
         # Initial position of the human
-        
         self.position[0] = random.uniform(0, self.space.width) if x_coord is None else x_coord
         self.position[1] = random.uniform(0, self.space.height)
 
@@ -112,7 +120,7 @@ class Human(ContinuousSpaceAgent):
         self.littering_rate = littering_rate
 
         # Direction that the human faces counting from rightwards direction clockwise in degrees
-        direction_for_given_x_coord = 0 if x_coord == -X_COORD_OFFSET else 180
+        direction_for_given_x_coord = 0 if x_coord == -self.X_COORD_OFFSET else 180
         self.initial_direction = random.randint(0, 1) * 180 if x_coord is None else direction_for_given_x_coord
         self.direction = self.initial_direction
 
@@ -125,16 +133,29 @@ class Human(ContinuousSpaceAgent):
         # average rotation of the human per step
         self.average_rotation = 1
 
+        # Does not immediately want to litter
+        self.wants_to_litter = False
+        self.nearest_trash: Trash | None = None
+        self.wait = 0
+
     def step(self):
+        self.wait -= 1
         self.move(self.speed)
 
         # Litter
         if random.uniform(0, 1) < self.littering_rate / 3000:
-            self.litter()
+            self.wants_to_litter = True
+            self.nearest_trash = self.get_nearest_trash(LITTER_SEEK_RADIUS)
+
+            if self.nearest_trash is None:
+                self.litter()
+                self.wants_to_litter = False
+
+
         
         # If the human is out of bounds of street, remove it and generate a new human
-        if not -X_COORD_OFFSET < self.position[0] < self.space.width + X_COORD_OFFSET:
-            random_x_coord = (self.space.width + 2 * X_COORD_OFFSET) * random.randint(0, 1) - X_COORD_OFFSET
+        if not -self.X_COORD_OFFSET < self.position[0] < self.space.width + self.X_COORD_OFFSET:
+            random_x_coord = (self.space.width + 2 * self.X_COORD_OFFSET) * random.randint(0, 1) - self.X_COORD_OFFSET
 
             Human.create_agents(
                     self.model,
@@ -147,57 +168,90 @@ class Human(ContinuousSpaceAgent):
             self.remove()
 
     def move(self, speed):
-        # TODO: Write a proper human movement function in which people don't just move randomly
-        # TODO: implement a wait mechanic (work on littering first)
+        # There are 2 types of movement: If human wants to litter and sees trash spot nearby, human will go in a straight line towards
+        # trash until they litter, else human will move towards self.destination whilst avoiding other humans and street edge.
 
-        # Minimaly change direction to make walking seem less automated
-        self.direction = (self.initial_direction + random.uniform(-5*self.average_rotation, 5*self.average_rotation)) % 360
-
-
-        # Update direction if human gets too close to street edge 
-        if self.position[1] < DIST_FROM_EDGE and self.destination == 0 or self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == self.space.width:
-            self.direction = (self.initial_direction - 30) % 360
-        if self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == 0 or self.position[1] < DIST_FROM_EDGE and self.destination == self.space.width:
-            self.direction = (self.initial_direction + 30) % 360
+        if self.wait > 0:
+            return
         
 
-        # Update direction if there is a human nearby, angle of new direction also depends on human's destination
-        # (takes priority over moving away from the edge)
-        nearest_neighbor = self.get_nearest_human_in_front(2.5)
-        if nearest_neighbor:
+        if not self.wants_to_litter:
+
+            # Minimaly change direction to make walking seem less automated
+            self.direction = (self.initial_direction + random.uniform(-5*self.average_rotation, 5*self.average_rotation)) % 360
+
+
+            # Update direction if human gets too close to street edge 
+            if self.position[1] < DIST_FROM_EDGE and self.destination == 0 or self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == self.space.width:
+                self.direction = (self.initial_direction - 30) % 360
+            if self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == 0 or self.position[1] < DIST_FROM_EDGE and self.destination == self.space.width:
+                self.direction = (self.initial_direction + 30) % 360
             
-            # Depending on position of nearest human relative to self, move 30 degrees away from neighbor
-            if self.destination == self.space.width:
-                x = self.position[1] - nearest_neighbor.position[1]
-                self.direction = (self.initial_direction + math.copysign(30, x)) % 360
-            elif self.destination == 0:
-                x = nearest_neighbor.position[1] - self.position[1]
-                self.direction = (self.initial_direction + math.copysign(30, x)) % 360
+
+            # Update direction if there is a human nearby, angle of new direction also depends on human's destination
+            # (takes priority over moving away from the edge)
+            nearest_neighbor = self.get_nearest_human_in_front(PERSONAL_SPACE_RADIUS)
+            if nearest_neighbor:
+                
+                # Depending on position of nearest human relative to self, move 30 degrees away from neighbor
+                if self.destination == self.space.width:
+                    x = self.position[1] - nearest_neighbor.position[1]
+                    self.direction = (self.initial_direction + math.copysign(30, x)) % 360
+                elif self.destination == 0:
+                    x = nearest_neighbor.position[1] - self.position[1]
+                    self.direction = (self.initial_direction + math.copysign(30, x)) % 360
 
 
-        # Define human direction in radians and displacement coefficient in x and y directions
-        radian_direction = 2*math.pi * (self.direction/360)
-        x_disp = math.cos(radian_direction)
-        y_disp = math.sin(radian_direction)
+            # Define human direction in radians and displacement coefficient in x and y directions
+            radian_direction = 2*math.pi * (self.direction/360)
+            x_disp = math.cos(radian_direction)
+            y_disp = math.sin(radian_direction)
 
-        # Update x coordinate
-        new_x = self.position[0] + x_disp * speed / 100
-        self.position[0] = new_x
+            # Update x coordinate
+            new_x = self.position[0] + x_disp * speed / 100
+            self.position[0] = new_x
 
-        # Update y coordinate
-        new_y = self.position[1] + y_disp * speed / 100
-        if new_y < 0:
-            new_y = 0
-            self.direction = - self.direction
-        if new_y > self.space.height:
-            new_y = self.space.height
-            self.direction = - self.direction
-        self.position[1] = new_y
+            # Update y coordinate
+            new_y = self.position[1] + y_disp * speed / 100
+            if new_y < 0:
+                new_y = 0
+                self.direction = - self.direction
+            if new_y > self.space.height:
+                new_y = self.space.height
+                self.direction = - self.direction
+            self.position[1] = new_y
+
+        else: # Human wants to litter
+            
+            if isinstance(self.nearest_trash, Trash):
+
+                # Calculate angle to trash
+                dx_trash = self.nearest_trash.position[0] - self.position[0]
+                dy_trash = self.nearest_trash.position[1] - self.position[1]
+                radian_direction = math.atan2(dy_trash, dx_trash)
+                x_disp = math.cos(radian_direction)
+                y_disp = math.sin(radian_direction)
+
+                # Update x coordinate
+                new_x = self.position[0] + x_disp * speed / 100
+                self.position[0] = new_x
+
+                # Update y coordinate
+                new_y = self.position[1] + y_disp * speed / 100
+                self.position[1] = new_y
+
+                dist_to_trash = self.distance_to(self.nearest_trash)
+                if dist_to_trash < 0.1:
+                    self.position[0] = self.nearest_trash.position[0]
+                    self.position[1] = self.nearest_trash.position[1]
+                    self.nearest_trash.size += 1
+                    self.nearest_trash = None
+                    self.wants_to_litter = False
+                    self.wait = TIME_TO_PRODUCE_TRASH
+
 
 
     def litter(self):
-        # TODO: Write a proper littering function that makes people throw trash in an existing pile if there is one nearby
-        # print(f"Human {self.unique_id} is littering")
         Trash.create_agents(
             self.model,
             1,
@@ -205,6 +259,7 @@ class Human(ContinuousSpaceAgent):
             x_coord=self.position[0],
             y_coord=self.position[1]
         )
+        self.wants_to_litter = False
     
     def get_nearest_human_in_front(self, radius):
         """
@@ -226,9 +281,36 @@ class Human(ContinuousSpaceAgent):
             return None
 
         # Find the closest agent of the given type using Euclidian Distancen      
-        nearest_agent = min(human_neighbors, key=lambda neighbor: math.sqrt(math.pow(self.position[0] - neighbor.position[0], 2) + math.pow(self.position[1] - neighbor.position[1], 2)))
+        nearest_agent = min(human_neighbors, key=lambda neighbor:  self.distance_to(neighbor))
         
         return nearest_agent
+    
+
+    def get_nearest_trash(self, radius):
+        """
+        Finds the nearest Trash in given radius.
+
+        Args:
+            radius: radius of search
+
+        Returns:
+            The nearest Trash in radius, or None if none are found.
+        """
+        all_neighbors = self.get_neighbors_in_radius(radius)
+
+        # Filter agents by type
+        trash_neighbors = [agent for agent in all_neighbors[0] if isinstance(agent, Trash)]
+
+        if not trash_neighbors:
+            return None
+        
+        # Find the closest agent of the given type using Euclidian Distancen      
+        nearest_trash = min(trash_neighbors, key=lambda neighbor: self.distance_to(neighbor))
+        
+        return nearest_trash
+    
+    def distance_to(self, agent: ContinuousSpaceAgent):
+        return math.sqrt(math.pow(self.position[0] - agent.position[0], 2) + math.pow(self.position[1] - agent.position[1], 2))
 
 
 # Trash of different size that lies on the street
