@@ -1,3 +1,4 @@
+import os
 from Agents import Robot, Human, Trash
 from Model import TrashCollection
 from mesa.visualization import (
@@ -11,7 +12,7 @@ def trash_collection_portrayal(agent):
         return
 
     # Defines size of agents
-    portrayal = {
+    portrayal: dict[str, int | str] = {
         "size": 25,
     }
 
@@ -20,18 +21,23 @@ def trash_collection_portrayal(agent):
     if isinstance(agent, Robot):
         portrayal["color"] = "tab:blue"
         portrayal["marker"] = "s"
+        portrayal["zorder"] = 2
 
     # Defines color and shape of humans
     # For now each human is an orange circle
     if isinstance(agent, Human):
         portrayal["color"] = "tab:orange"
         portrayal["marker"] = "o"
+        # portrayal["html"] = f'<img src="images/human.png" width="{portrayal["size"]}" height="{portrayal["size"]}" />'
+        portrayal["zorder"] = 3
+
 
     # Defines color and shape of trash spots
-    # For now each trash spot is a grey triangle
+    # For now each trash spot is a grey cross
     if isinstance(agent, Trash):
         portrayal["color"] = "tab:grey"
         portrayal["marker"] = "x"
+        portrayal["zorder"] = 1
 
     return portrayal
 
@@ -52,18 +58,18 @@ model_params = {
     "width": {
         "type": "SliderInt",
         "value": 200,
-        "label": "Street length (meters)",
-        "min": 10,
-        "max": 1000,
+        "label": "Street width (meters)",
+        "min": 3,
+        "max": 50,
         "step": 1,
     },
 
     "height": {
         "type": "SliderInt",
         "value": 10,
-        "label": "Street width (meters)",
+        "label": "Street length (meters)",
         "min": 3,
-        "max": 30,
+        "max": 50,
         "step": 1,
     },
 
@@ -138,4 +144,4 @@ page = SolaraViz(
     name="Trash Collection"
 )
 
-page
+# page
