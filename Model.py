@@ -45,7 +45,7 @@ class TrashCollection(Model):
             capacity=robot_capacity,
         )
 
-        # Populate the street with half of nr_of_people at start
+        # Populate the street with nr_of_people people at start
         Human.create_agents(
             self,
             nr_of_people,
