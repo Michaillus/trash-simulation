@@ -1,6 +1,6 @@
-import os
 from Agents import Robot, Human, Trash
 from Model import TrashCollection
+from matplotlib.axes import Axes
 from mesa.visualization import (
     SolaraViz,
     make_space_component
@@ -21,29 +21,32 @@ def trash_collection_portrayal(agent):
     if isinstance(agent, Robot):
         portrayal["color"] = "tab:blue"
         portrayal["marker"] = "s"
-        portrayal["zorder"] = 2
+        portrayal["zorder"] = 3
 
     # Defines color and shape of humans
     # For now each human is an orange circle
     if isinstance(agent, Human):
         portrayal["color"] = "tab:orange"
         portrayal["marker"] = "o"
-        # portrayal["html"] = f'<img src="images/human.png" width="{portrayal["size"]}" height="{portrayal["size"]}" />'
-        portrayal["zorder"] = 3
+        portrayal["zorder"] = 2
 
 
     # Defines color and shape of trash spots
     # For now each trash spot is a grey cross
     if isinstance(agent, Trash):
-        portrayal["color"] = "tab:grey"
+        
         portrayal["marker"] = "x"
         portrayal["zorder"] = 1
+
+        # As Trash "size" increases its marker's size increases and its color gets darker.
+        portrayal["size"] = 25 + 3 * agent.size
+        portrayal["color"] = str(0.5**agent.size)
 
     return portrayal
 
 
-def post_process(ax):
-    ax.set_aspect("equal")
+def post_process(ax: Axes):
+    ax.set_aspect('equal')
     ax.set_xticks([])
     ax.set_yticks([])
 
@@ -57,19 +60,19 @@ model_params = {
 
     "width": {
         "type": "SliderInt",
-        "value": 200,
-        "label": "Street width (meters)",
+        "value": 50,
+        "label": "Street length (meters)",
         "min": 3,
-        "max": 50,
+        "max": 200,
         "step": 1,
     },
 
     "height": {
         "type": "SliderInt",
         "value": 10,
-        "label": "Street length (meters)",
+        "label": "Street width (meters)",
         "min": 3,
-        "max": 50,
+        "max": 20,
         "step": 1,
     },
 
