@@ -2,15 +2,16 @@ import random
 
 from mesa import Model
 from mesa.experimental.continuous_space.continuous_space import ContinuousSpace
+
 from Agents import Human, Robot
 
 class TrashCollection(Model):
     def __init__(
             self,
-            width = 200,
-            height = 10,
+            width = 100,
+            height = 30,
             nr_of_people = 20,
-            human_speed = 5,
+            human_speed = 10,
             littering_rate = 5,
             robot_max_energy = 100,
             robot_max_speed = 10,
@@ -23,8 +24,11 @@ class TrashCollection(Model):
         # Size of the space: width and height in meters
         self.width = width
         self.height = height
-        # Number of people of the street
+
+        # Attributes of Humans
         self.nr_of_people = nr_of_people
+        self.human_speed = human_speed
+        self.littering_rate = littering_rate
 
         # Create a continuous space
         dimensions = [[0, width], [0, height]]
@@ -41,7 +45,7 @@ class TrashCollection(Model):
             capacity=robot_capacity,
         )
 
-        # Create people
+        # Populate the street with half of nr_of_people at start
         Human.create_agents(
             self,
             nr_of_people,
