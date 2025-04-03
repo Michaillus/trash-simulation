@@ -60,6 +60,8 @@ class Robot(ContinuousSpaceAgent):
         # Expected time it should take to finish a cleaning loop in seconds
         self.expected_time = (1 + 0.05 * model.nr_of_people) * space.width / max_speed
 
+
+
     # Actions of the robot on each step of the model
     def step(self):
         self.time_passed += 1
