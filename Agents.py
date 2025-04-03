@@ -92,8 +92,10 @@ class Robot(DirectionalAgent):
         # Robot initially looking rightwards.
         super().__init__(space, model, initial_direction=EAST, max_rotation=2)
 
+        self.X_COORD_OFFSET = space.width // 5
+
         # Initial position of the robot
-        self.position[0] = 0
+        self.position[0] = -self.X_COORD_OFFSET
         self.position[1] = space.height / 2
 
         # Maximum speed of the robot
@@ -116,9 +118,16 @@ class Robot(DirectionalAgent):
 
         # Amount of trash cleaned by robot from the start of simulation
         self.trash_cleaned = 0
+        # Time left to charge
+        self.time_to_charge = 0
 
     # Actions of the robot on each step of the model
     def step(self):
+        # Check if robot is charging
+        if self.time_to_charge > 0:
+            self.charge()
+            return
+
         # Choosing the next target if there is none
         from Algorithm import choose_next_target
         if self.target_trash is None:
@@ -150,6 +159,11 @@ class Robot(DirectionalAgent):
         # Trash was missed (most probably due to robot being unable to change direction quick enough)
         if self.target_trash is not None and self.position[0] > self.target_trash.position[0]:
             self.target_trash = None
+
+
+
+        if self.position[0] > (self.space.width + self.X_COORD_OFFSET):
+            self.time_to_charge = 600
 
         self.time_passed += 1
 
@@ -200,7 +214,11 @@ class Robot(DirectionalAgent):
 
 
     def charge(self):
-        print("Robot is charging")
+        self.time_to_charge -= 1
+        if self.time_to_charge == 0:
+            self.position[0] = -self.X_COORD_OFFSET
+            self.position[1] = self.space.height / 2
+
 
     def adjust_speed(self, speed):
         agents_very_close, _ = self.get_neighbors_in_radius(STOP_RADIUS)
