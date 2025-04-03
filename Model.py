@@ -13,12 +13,17 @@ from Agents import Human, Robot, Trash
     Args:
         street_length: Length of the street in meters
         street_width: Width of the street in meters
+        
         nr_of_people: Number of people on the street
         human_speed_km_h: Speed of humans in kilometers/hour
         littering_rate: Rate with which people litter on the street in trash units per hour
+        
         robot_max_energy: Maximum energy that robot can have
         robot_max_speed_km_h: Maximum speed of the robot in kilometers/hour
         robot_capacity: Capacity of the robot in units of trash
+        robot_visibility: Radius (in meters) in which robot can identify trash and people
+        enable_robot: If robot should be enabled and collect trash or stay idle
+        
         seed: Seed for random number generator
 """
 class TrashCollection(Model):
@@ -31,6 +36,7 @@ class TrashCollection(Model):
             littering_rate = 5,
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
+            robot_visibility = 10,
             enable_robot = True,
             seed = None
         ):
@@ -70,6 +76,7 @@ class TrashCollection(Model):
                 # Maximum speed of the robot is converted to meters per decisecond
                 max_speed=robot_max_speed_km_h / 36,
                 capacity=robot_capacity,
+                visibility=robot_visibility,
             )
 
         # Populate the street with nr_of_people people at start

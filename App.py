@@ -124,6 +124,15 @@ model_params = {
         "step": 1,
     },
 
+    "robot_visibility": {
+        "type": "SliderInt",
+        "value": 10,
+        "label": "Visibility of robot in meters",
+        "min": 0,
+        "max": 50,
+        "step": 1,
+    },
+
     "enable_robot": {
         "type": "Checkbox",
         "value": True,

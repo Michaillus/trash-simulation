@@ -11,6 +11,7 @@ DIST_FROM_EDGE = 1
 
 LITTER_SEEK_RADIUS = 3
 
+STOP_RADIUS = 1
 PERSONAL_SPACE_RADIUS = 2.5
 TIME_TO_PRODUCE_TRASH = 20
 
@@ -61,9 +62,16 @@ class DirectionalAgent(ContinuousSpaceAgent):
     def distance_to(self, agent: ContinuousSpaceAgent):
         return math.sqrt(math.pow(self.position[0] - agent.position[0], 2) + math.pow(self.position[1] - agent.position[1], 2))
 
-    # Get direction angle from the agent to given position in degrees
-    def get_direction_angle(self, pos):
-        return 360 * math.atan2(pos[1] - self.position[1], pos[0] - self.position[0]) / (2 * math.pi)
+    # Get smallest (can be negative) angle between current direction and direction towadrds the position pos
+    def get_angle_towards(self, pos):
+        angle = 360 * math.atan2(pos[1] - self.position[1], pos[0] - self.position[0]) / (2 * math.pi)
+
+        angle_diff = angle - self.direction
+        if abs(angle_diff + 360) < abs(angle_diff):
+            angle_diff += 360
+        if abs(angle_diff - 360) < abs(angle_diff):
+            angle_diff -= 360
+        return angle_diff
 
 # Robot agent that moves along the street and sweeps trash
 class Robot(DirectionalAgent):
@@ -79,7 +87,8 @@ class Robot(DirectionalAgent):
                  model,
                  space: ContinuousSpace,
                  max_speed = 10,
-                 capacity = 100):
+                 capacity = 100,
+                 visibility = 10):
 
         # Robot initially looking rightwards.
         super().__init__(space, model, initial_direction=EAST, max_rotation=2)
@@ -90,11 +99,13 @@ class Robot(DirectionalAgent):
 
         # Maximum speed of the robot
         self.max_speed = max_speed
-        # Maximum speed of the robot when it is sweeping
-        self.max_sweep_speed = 0.2 * max_speed
+        # Maximum speed of the robot when it is sweeping or passing nearby people
+        self.slow_speed = 0.2 * max_speed
         # Initial fullness and capacity of the robot
         self.fullness = 0
         self.capacity = capacity
+        # Radius (in meters) in which robot can recognize trash and people
+        self.visibility = visibility
 
         # Time passed since the start of a cleaning loop in deciseconds
         self.time_passed = 0
@@ -112,26 +123,30 @@ class Robot(DirectionalAgent):
         # Choosing the next target if there is none
         from Algorithm import choose_next_target
         if self.target_trash is None:
-            trash_spots = self.model.agents_by_type.get(Trash, [])
-            trash_in_front = [trash for trash in trash_spots if trash.position[0] > self.position[0]]
+            agents_nearby, _ = self.get_neighbors_in_radius(self.visibility)
+            trash_in_front = [agent for agent in agents_nearby if isinstance(agent, Trash)
+                              and agent.position[0] > self.position[0]]
             self.target_trash = choose_next_target(self, trash_in_front)
 
+        target_pos = None
+        speed = self.max_speed
         if self.target_trash is None:
             # No trash in front, just go straight
-            self.move(self.max_speed, [2 * self.space.width, self.position[1]])
+            target_pos = [2 * self.space.width, self.position[1]]
         else:
+            # If there is trash to collect, move towards the trash
             target_pos = self.target_trash.position
-
-            # If no constraints, then move with maximum speed
-            speed = self.max_speed
 
             # If trash is close enough, start sweeping
             if self.distance_to(self.target_trash) < self.max_speed:
-                speed = self.max_sweep_speed
+                speed = self.slow_speed
                 self.sweep()
 
-            # If there is trash to collect, move towards the trash
-            self.move(speed, target_pos)
+        # Adjust speed depending on people nearby
+        speed = self.adjust_speed(speed)
+
+        # Move towards chosen position with chosen speed
+        self.move(speed, target_pos)
 
         # Trash was missed (most probably due to robot being unable to change direction quick enough)
         if self.target_trash is not None and self.position[0] > self.target_trash.position[0]:
@@ -148,12 +163,7 @@ class Robot(DirectionalAgent):
     """
     def move(self, speed, position):
         # Turn towards the position
-        angle = self.get_direction_angle(position)
-        angle_diff = angle - self.direction
-        if abs(angle_diff + 360) < abs(angle_diff):
-            angle_diff += 360
-        if abs(angle_diff - 360) < abs(angle_diff):
-            angle_diff -= 360
+        angle_diff = self.get_angle_towards(position)
         self.direction += sign(angle_diff) * min(abs(angle_diff), self.max_rotation)
 
         # Move towards the position with given speed
@@ -168,7 +178,7 @@ class Robot(DirectionalAgent):
     """
     def sweep(self):
         # Define sweeping radius - length that robot passes in one step(decisecond) with sweeping speed
-        sweeping_radius = self.max_sweep_speed
+        sweeping_radius = self.slow_speed
 
         # Get all trash in the radius
         agents_nearby, _ = self.get_neighbors_in_radius(sweeping_radius)
@@ -178,12 +188,36 @@ class Robot(DirectionalAgent):
         for trash in trash_nearby:
             self.trash_cleaned += trash.size
             self.fullness += trash.size
+
+            # Reset nearest trash for people who had this trash as nearest
+            for human in self.model.agents_by_type.get(Human, []):
+                if human.nearest_trash == trash:
+                    human.nearest_trash = None
+
+            # Remove trash agent
             trash.remove()
+            # Reset target trash
             self.target_trash = None
 
 
     def charge(self):
         print("Robot is charging")
+
+    def adjust_speed(self, speed):
+        agents_very_close, _ = self.get_neighbors_in_radius(STOP_RADIUS)
+        people_front_close = [agent for agent in agents_very_close if isinstance(agent, Human)
+                              and abs(self.get_angle_towards(agent.position)) <= 90]
+        if len(people_front_close) > 0:
+            return 0
+
+        agents_nearby, _ = self.get_neighbors_in_radius(PERSONAL_SPACE_RADIUS)
+        people_front_nearby = [agent for agent in agents_nearby if isinstance(agent, Human)
+                              and abs(self.get_angle_towards(agent.position)) <= 90]
+        print(len(agents_nearby), len(people_front_nearby))
+        if len(people_front_nearby) > 0:
+            return self.slow_speed
+        else:
+            return speed
 
 # Human agent that walks on the street and litters
 class Human(DirectionalAgent):
@@ -357,7 +391,7 @@ class Human(DirectionalAgent):
         x = 1 if self.destination == 0 else -1
 
         # Filter agents by type
-        human_neighbors = [agent for agent in all_neighbors[0] if isinstance(agent, Human | Robot) and x*(self.position[0] - agent.position[0]) > 0]
+        human_neighbors = [agent for agent in all_neighbors[0] if isinstance(agent, Human) and x*(self.position[0] - agent.position[0]) > 0]
 
         if not human_neighbors:
             return None
