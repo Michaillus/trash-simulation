@@ -1,11 +1,10 @@
-import pprint
 import random
 
 from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.experimental.continuous_space.continuous_space import ContinuousSpace
 
-from Agents import Human, Robot, Trash
+from Agents import Human, Robot, Trash, TrashCar
 
 """Model that simulates a street with people passing along the street and throwing trash.
     A robot patrols the street and sweeps the trash.
@@ -58,13 +57,31 @@ class TrashCollection(Model):
 
         # Set up data collection
         model_reporters={
-                "Amount of trash": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, []))
+                "Amount of trash on street": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, [])),
+                "Trash Produced per Step": lambda m: (
+                    sum(trash.size for trash in m.agents_by_type.get(Trash, [])) 
+                    - (m.datacollector.model_vars["Amount of trash on street"][-2] if len(m.datacollector.model_vars["Amount of trash on street"]) > 1 else 0)),
+                "Trash Produced per minute": lambda m: (
+                    sum(m.datacollector.model_vars["Trash Produced per Step"][-600:]) 
+                    if len(m.datacollector.model_vars["Trash Produced per Step"]) >= 600 else 0),
+    
+                "Amount of trash cleaned": lambda m: sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))),
+                "Trash Cleaned per Step": lambda m: (
+                    sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, [])))
+                    - (m.datacollector.model_vars["Amount of trash cleaned"][-2] if len(m.datacollector.model_vars["Amount of trash cleaned"]) > 1 else 0)),
+                
+                "Trash Cleaned per minute": lambda m: (
+                    sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:]) 
+                    if len(m.datacollector.model_vars["Trash Cleaned per Step"]) >= 600 else 0),
             }
+        
 
         self.datacollector = DataCollector(model_reporters)
 
         # Create robot if the robot is enabled
-        if enable_robot:
+        self.enable_robot = enable_robot
+
+        if self.enable_robot:
             Robot.create_agents(
                 self,
                 1,
@@ -73,6 +90,14 @@ class TrashCollection(Model):
                 # Maximum speed of the robot is converted to meters per decisecond
                 max_speed=robot_max_speed_km_h / 36,
                 capacity=robot_capacity,
+            )
+        else:
+            TrashCar.create_agents(
+                self,
+                1,
+                space=self.space,
+                time_until_first_sweep=5, # 216000 (= 6h in deciseconds)
+                time_between_sweeps=10, # 864000 (= 1 day in deciseconds)
             )
 
         # Populate the street with nr_of_people people at start
@@ -93,7 +118,13 @@ class TrashCollection(Model):
     def step(self):
         # First activate all the people
         self.agents_by_type[Human].shuffle_do("step")
-        # Then activate the robot
-        self.agents_by_type[Robot].do("step")
+        if self.enable_robot:
+            # Then activate the robot
+            self.agents_by_type[Robot].do("step")
+        else:
+            self.agents_by_type[TrashCar].do("step")
+
         # Collect data
         self.datacollector.collect(self)
+
+        print(sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))))
