@@ -7,14 +7,14 @@ from Agents import Human, Robot
 
 """Model that simulates a street with people passing along the street and throwing trash.
     A robot patrols the street and sweeps the trash.
-    One step of the model is 0.1 second in real life.
+    One step of the model is a decisecond (0.1 second) in real life.
     
     Args:
         street_length: Length of the street in meters
         street_width: Width of the street in meters
         nr_of_people: Number of people on the street
         human_speed_km_h: Speed of humans in kilometers/hour
-        littering_rate: Rate with which people litter on the street
+        littering_rate: Rate with which people litter on the street in trash units per hour
         robot_max_energy: Maximum energy that robot can have
         robot_max_speed_km_h: Maximum speed of the robot in kilometers/hour
         robot_capacity: Capacity of the robot in units of trash
@@ -44,7 +44,7 @@ class TrashCollection(Model):
 
         # Attributes of Humans
         self.nr_of_people = nr_of_people
-        # Speed of humans in meters per 0.1 seconds
+        # Speed of humans in meters per decisecond
         self.human_speed = human_speed_km_h / 36
         self.littering_rate = littering_rate
 
@@ -59,7 +59,7 @@ class TrashCollection(Model):
             1,
             space=self.space,
             max_energy=robot_max_energy,
-            # Maximum speed of the robot is converted to meters per 0.1 second
+            # Maximum speed of the robot is converted to meters per decisecond
             max_speed=robot_max_speed_km_h / 36,
             capacity=robot_capacity,
         )
@@ -70,7 +70,8 @@ class TrashCollection(Model):
             nr_of_people,
             space=self.space,
             speed=self.human_speed,
-            littering_rate=littering_rate,
+            # Littering rate is converted to units of trash per decisecond
+            littering_rate=littering_rate / 36000,
         )
 
         # Make the model running

@@ -25,7 +25,7 @@ class Robot(ContinuousSpaceAgent):
         model: Mesa model
         space: Continue space that the robot is part of
         max_energy: Maximum energy that the robot can get
-        max_speed: Maximum speed that the robot can attain in meters per 0.1 second
+        max_speed: Maximum speed that the robot can attain in meters per decisecond (0.1 second)
         capacity: Number of trash units that the robot can fit
     """
     def __init__(self, model,
@@ -138,7 +138,7 @@ class Human(ContinuousSpaceAgent):
         self.move(self.speed)
 
         # Litter
-        if random.uniform(0, 1) < self.littering_rate / 3000:
+        if random.uniform(0, 1) < self.littering_rate:
             self.wants_to_litter = True
             self.nearest_trash = self.get_nearest_trash(LITTER_SEEK_RADIUS)
 
@@ -206,11 +206,11 @@ class Human(ContinuousSpaceAgent):
             y_disp = math.sin(radian_direction)
 
             # Update x coordinate
-            new_x = self.position[0] + x_disp * speed / 10
+            new_x = self.position[0] + x_disp * speed
             self.position[0] = new_x
 
             # Update y coordinate
-            new_y = self.position[1] + y_disp * speed / 10
+            new_y = self.position[1] + y_disp * speed
             if new_y < 0:
                 new_y = 0
                 self.direction = - self.direction
@@ -231,11 +231,11 @@ class Human(ContinuousSpaceAgent):
                 y_disp = math.sin(radian_direction)
 
                 # Update x coordinate
-                new_x = self.position[0] + x_disp * speed / 10
+                new_x = self.position[0] + x_disp * speed
                 self.position[0] = new_x
 
                 # Update y coordinate
-                new_y = self.position[1] + y_disp * speed / 10
+                new_y = self.position[1] + y_disp * speed
                 self.position[1] = new_y
 
                 dist_to_trash = self.distance_to(self.nearest_trash)
