@@ -32,7 +32,8 @@ class Robot(ContinuousSpaceAgent):
                  space: ContinuousSpace,
                  max_energy = 100,
                  max_speed = 10,
-                 capacity = 100):
+                 capacity = 100,
+                 robot_enabled = True):
         super().__init__(space, model)
 
         # Initial position of the robot

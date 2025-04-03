@@ -31,6 +31,7 @@ class TrashCollection(Model):
             robot_max_energy = 100,
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
+            enable_robot = True,
             seed = None
         ):
 
@@ -53,16 +54,17 @@ class TrashCollection(Model):
         rng = random.Random(seed)
         self.space = ContinuousSpace(dimensions, torus=False, random=rng)
 
-        # Create robot
-        Robot.create_agents(
-            self,
-            1,
-            space=self.space,
-            max_energy=robot_max_energy,
-            # Maximum speed of the robot is converted to meters per decisecond
-            max_speed=robot_max_speed_km_h / 36,
-            capacity=robot_capacity,
-        )
+        # Create robot if the robot is enabled
+        if enable_robot:
+            Robot.create_agents(
+                self,
+                1,
+                space=self.space,
+                max_energy=robot_max_energy,
+                # Maximum speed of the robot is converted to meters per decisecond
+                max_speed=robot_max_speed_km_h / 36,
+                capacity=robot_capacity,
+            )
 
         # Populate the street with nr_of_people people at start
         Human.create_agents(
