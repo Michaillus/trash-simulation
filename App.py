@@ -42,7 +42,7 @@ def trash_collection_portrayal(agent):
         # As Trash "size" increases its marker's size increases and its color gets darker.
         portrayal["size"] = 150 + 30 * agent.size
         portrayal["color"] = str(0.5**agent.size)
-        portrayal["trash_size"] = agent.size
+        # portrayal["trash_size"] = agent.size
 
     return portrayal
 
