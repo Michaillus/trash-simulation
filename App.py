@@ -58,7 +58,7 @@ model_params = {
         "label": "Random seed",
     },
 
-    "width": {
+    "street_length": {
         "type": "SliderInt",
         "value": 50,
         "label": "Street length (meters)",
@@ -67,7 +67,7 @@ model_params = {
         "step": 1,
     },
 
-    "height": {
+    "street_width": {
         "type": "SliderInt",
         "value": 10,
         "label": "Street width (meters)",
@@ -85,10 +85,10 @@ model_params = {
         "step": 1,
     },
 
-    "human_speed": {
+    "human_speed_km_h": {
         "type": "SliderInt",
         "value": 5,
-        "label": "Speed with which people move (km/h)",
+        "label": "People speed (km/h)",
         "min": 1,
         "max": 20,
         "step": 1,
@@ -112,7 +112,7 @@ model_params = {
         "step": 1,
     },
 
-    "robot_max_speed": {
+    "robot_max_speed_km_h": {
         "type": "SliderInt",
         "value": 10,
         "label": "Maximum speed of robot (km/h)",
@@ -142,7 +142,7 @@ trash_collection = TrashCollection()
 
 # Component of visualization that shows the space
 space_component = make_space_component(
-    trash_collection_portrayal, draw_grid=False, post_process=post_process
+    trash_collection_portrayal, draw_grid=False, post_process=post_process, width=1500, height=100
 )
 
 # Instance of a visualization
@@ -152,5 +152,3 @@ page = SolaraViz(
     model_params=model_params,
     name="Trash Collection"
 )
-
-page

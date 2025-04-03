@@ -9,10 +9,9 @@ WEST = 180
 DIST_FROM_EDGE = 1
 
 LITTER_SEEK_RADIUS = 3
-NR_OF_TRASH_SPOTS = 20
 
 PERSONAL_SPACE_RADIUS = 2.5
-TIME_TO_PRODUCE_TRASH = 5
+TIME_TO_PRODUCE_TRASH = 20
 
 MEDIUM_TRASH = 4
 BIG_TRASH = 10
@@ -26,7 +25,7 @@ class Robot(ContinuousSpaceAgent):
         model: Mesa model
         space: Continue space that the robot is part of
         max_energy: Maximum energy that the robot can get
-        max_speed: Maximum speed that the robot can attain
+        max_speed: Maximum speed that the robot can attain in meters per decisecond (0.1 second)
         capacity: Number of trash units that the robot can fit
     """
     def __init__(self, model,
@@ -63,7 +62,6 @@ class Robot(ContinuousSpaceAgent):
 
     # Actions of the robot on each step of the model
     def step(self):
-        # print(f"I am a robot {self.unique_id} at {self.position[0]}, {self.position[1]}")
         self.time_passed += 1
 
     """One step of robot movement. The robot turns up to maximum allowed rotation towards target position and moves
@@ -74,23 +72,20 @@ class Robot(ContinuousSpaceAgent):
         position: Position towards which robot rotates and moves 
     """
     def move(self, speed, position):
-        """Remove all the trash one step behind the robot considering that robot was moving with given speed.
-        If robot was moving with the speed more than the max_sweep_speed, sweeping doesn't occur and an error
-        message is printed.
-        
-        Args:
-            speed: Speed with which the robot moved in current step
-        """
-        # print("Robot is moving")
-        pass
-    
+        print("Robot is moving")
+
+    """Remove all the trash one step behind the robot considering that robot was moving with given speed.
+    If robot was moving with the speed more than the max_sweep_speed, sweeping doesn't occur and an error
+    message is printed.
+
+    Args:
+        speed: Speed with which the robot moved in current step
+    """
     def sweep(self, speed):
-        # print("Robot is sweeping")
-        pass
+        print("Robot is sweeping")
 
     def charge(self):
-        # print("Robot is charging")
-        pass
+        print("Robot is charging")
 
 # Human agent that walks on the street and litters
 class Human(ContinuousSpaceAgent):
@@ -144,7 +139,7 @@ class Human(ContinuousSpaceAgent):
         self.move(self.speed)
 
         # Litter
-        if random.uniform(0, 1) < self.littering_rate / 3000:
+        if random.uniform(0, 1) < self.littering_rate:
             self.wants_to_litter = True
             self.nearest_trash = self.get_nearest_trash(LITTER_SEEK_RADIUS)
 
@@ -178,14 +173,17 @@ class Human(ContinuousSpaceAgent):
 
         if not self.wants_to_litter:
 
-            # Minimaly change direction to make walking seem less automated
+            # Minimally change direction to make walking seem less automated
             self.direction = (self.initial_direction + random.uniform(-5*self.average_rotation, 5*self.average_rotation)) % 360
 
 
             # Update direction if human gets too close to street edge 
-            if self.position[1] < DIST_FROM_EDGE and self.destination == 0 or self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == self.space.width:
+            if (self.position[1] < DIST_FROM_EDGE and self.destination == 0 or
+                self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == self.space.width):
                 self.direction = (self.initial_direction - 30) % 360
-            if self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == 0 or self.position[1] < DIST_FROM_EDGE and self.destination == self.space.width:
+
+            if (self.position[1] > self.space.height - DIST_FROM_EDGE and self.destination == 0 or
+                self.position[1] < DIST_FROM_EDGE and self.destination == self.space.width):
                 self.direction = (self.initial_direction + 30) % 360
             
 
@@ -209,11 +207,11 @@ class Human(ContinuousSpaceAgent):
             y_disp = math.sin(radian_direction)
 
             # Update x coordinate
-            new_x = self.position[0] + x_disp * speed / 100
+            new_x = self.position[0] + x_disp * speed
             self.position[0] = new_x
 
             # Update y coordinate
-            new_y = self.position[1] + y_disp * speed / 100
+            new_y = self.position[1] + y_disp * speed
             if new_y < 0:
                 new_y = 0
                 self.direction = - self.direction
@@ -234,11 +232,11 @@ class Human(ContinuousSpaceAgent):
                 y_disp = math.sin(radian_direction)
 
                 # Update x coordinate
-                new_x = self.position[0] + x_disp * speed / 100
+                new_x = self.position[0] + x_disp * speed
                 self.position[0] = new_x
 
                 # Update y coordinate
-                new_y = self.position[1] + y_disp * speed / 100
+                new_y = self.position[1] + y_disp * speed
                 self.position[1] = new_y
 
                 dist_to_trash = self.distance_to(self.nearest_trash)
