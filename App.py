@@ -3,7 +3,8 @@ from Model import TrashCollection
 from matplotlib.axes import Axes
 from mesa.visualization import (
     SolaraViz,
-    make_space_component
+    make_space_component,
+    make_plot_component
 )
 
 # Function to portray the agents. Defines visual properties of each agent.
@@ -13,7 +14,7 @@ def trash_collection_portrayal(agent):
 
     # Defines size of agents
     portrayal: dict[str, int | str] = {
-        "size": 25,
+        "size": 150,
     }
 
     # Defines color and shape of the robot
@@ -35,12 +36,13 @@ def trash_collection_portrayal(agent):
     # For now each trash spot is a grey cross
     if isinstance(agent, Trash):
         
-        portrayal["marker"] = "x"
+        portrayal["marker"] = "X"
         portrayal["zorder"] = 1
 
         # As Trash "size" increases its marker's size increases and its color gets darker.
-        portrayal["size"] = 25 + 3 * agent.size
+        portrayal["size"] = 150 + 30 * agent.size
         portrayal["color"] = str(0.5**agent.size)
+        portrayal["trash_size"] = agent.size
 
     return portrayal
 
@@ -146,10 +148,13 @@ space_component = make_space_component(
     trash_collection_portrayal, draw_grid=False, post_process=post_process
 )
 
+# Component of visualization that shows the plot
+plot_component = make_plot_component("Amount of trash")
+
 # Instance of a visualization
 page = SolaraViz(
     trash_collection,
-    components=[space_component],
+    components=[space_component, plot_component],
     model_params=model_params,
     name="Trash Collection"
 )
