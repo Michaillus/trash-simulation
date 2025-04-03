@@ -125,8 +125,18 @@ class Robot(DirectionalAgent):
             # No trash in front, just go straight
             self.move(self.max_speed, [2 * self.space.width, self.position[1]])
         else:
+            target_pos = self.target_trash.position
+
+            # If no constraints, then move with maximum speed
+            speed = self.max_speed
+
+            # If trash is close enough, start sweeping
+            if self.distance_to(self.target_trash) < self.max_speed:
+                speed = self.max_sweep_speed
+                self.sweep()
+
             # If there is trash to collect, move towards the trash
-            self.move(self.max_speed, self.target_trash.position)
+            self.move(speed, target_pos)
 
         # Trash was missed (most probably due to robot being unable to change direction quick enough)
         if self.target_trash is not None and self.position[0] > self.target_trash.position[0]:
