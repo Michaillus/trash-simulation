@@ -29,7 +29,6 @@ class TrashCollection(Model):
             nr_of_people = 20,
             human_speed_km_h = 10,
             littering_rate = 5,
-            robot_max_energy = 100,
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
             enable_robot = True,
@@ -59,22 +58,21 @@ class TrashCollection(Model):
         model_reporters={
                 "Amount of trash on street": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, [])),
                 "Trash Produced per Step": lambda m: (
-                    sum(trash.size for trash in m.agents_by_type.get(Trash, [])) 
+                    sum(trash.size for trash in m.agents_by_type.get(Trash, []))
                     - (m.datacollector.model_vars["Amount of trash on street"][-2] if len(m.datacollector.model_vars["Amount of trash on street"]) > 1 else 0)),
                 "Trash Produced per minute": lambda m: (
-                    sum(m.datacollector.model_vars["Trash Produced per Step"][-600:]) 
+                    sum(m.datacollector.model_vars["Trash Produced per Step"][-600:])
                     if len(m.datacollector.model_vars["Trash Produced per Step"]) >= 600 else 0),
-    
+
                 "Amount of trash cleaned": lambda m: sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))),
                 "Trash Cleaned per Step": lambda m: (
                     sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, [])))
                     - (m.datacollector.model_vars["Amount of trash cleaned"][-2] if len(m.datacollector.model_vars["Amount of trash cleaned"]) > 1 else 0)),
-                
+
                 "Trash Cleaned per minute": lambda m: (
-                    sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:]) 
+                    sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:])
                     if len(m.datacollector.model_vars["Trash Cleaned per Step"]) >= 600 else 0),
             }
-        
 
         self.datacollector = DataCollector(model_reporters)
 
@@ -86,7 +84,6 @@ class TrashCollection(Model):
                 self,
                 1,
                 space=self.space,
-                max_energy=robot_max_energy,
                 # Maximum speed of the robot is converted to meters per decisecond
                 max_speed=robot_max_speed_km_h / 36,
                 capacity=robot_capacity,
