@@ -104,15 +104,6 @@ model_params = {
         "step": 1,
     },
 
-    "robot_max_energy": {
-        "type": "SliderInt",
-        "value": 100,
-        "label": "Maximum energy of robot",
-        "min": 0,
-        "max": 1000,
-        "step": 1,
-    },
-
     "robot_max_speed_km_h": {
         "type": "SliderInt",
         "value": 10,

@@ -28,7 +28,6 @@ class TrashCollection(Model):
             nr_of_people = 20,
             human_speed_km_h = 10,
             littering_rate = 5,
-            robot_max_energy = 100,
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
             enable_robot = True,
@@ -60,7 +59,6 @@ class TrashCollection(Model):
                 self,
                 1,
                 space=self.space,
-                max_energy=robot_max_energy,
                 # Maximum speed of the robot is converted to meters per decisecond
                 max_speed=robot_max_speed_km_h / 36,
                 capacity=robot_capacity,

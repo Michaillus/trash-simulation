@@ -72,14 +72,12 @@ class Robot(DirectionalAgent):
     Args:
         model: Mesa model
         space: Continue space that the robot is part of
-        max_energy: Maximum energy that the robot can get
         max_speed: Maximum speed that the robot can attain in meters per decisecond (0.1 second)
         capacity: Number of trash units that the robot can fit
     """
     def __init__(self,
                  model,
                  space: ContinuousSpace,
-                 max_energy = 100,
                  max_speed = 10,
                  capacity = 100):
 
@@ -90,9 +88,6 @@ class Robot(DirectionalAgent):
         self.position[0] = 0
         self.position[1] = space.height / 2
 
-        # Initial and maximum energy of the robot
-        self.energy = max_energy
-        self.max_energy = max_energy
         # Maximum speed of the robot
         self.max_speed = max_speed
         # Maximum speed of the robot when it is sweeping
