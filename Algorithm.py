@@ -1,6 +1,7 @@
 import math
 
 from mesa.model import Model
+from mesa.agent import AgentSet
 from Agents import Trash, Robot
 
 # Return maximum trash size out of all trash spots
@@ -60,3 +61,13 @@ def trash_score(robot: Robot, trash: Trash) -> float:
     # Total score of the trash spot
     score = w1 * s_angle + w2 * s_amount + w3 * s_time + w4 * s_fullness
     return score
+
+def choose_next_target(robot: Robot, trash_spots: AgentSet):
+    best_trash = None
+    best_score = float('-inf')
+    for trash in trash_spots:
+        score = trash_score(robot, trash)
+        if score > best_score:
+            best_score = score
+            best_trash = trash
+    return best_trash

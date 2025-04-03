@@ -68,7 +68,10 @@ class Robot(ContinuousSpaceAgent):
         speed: Speed with which the robot moved in current step
     """
     def sweep(self, speed):
-        print("Robot is sweeping")
+        sweeping_radius = self.max_sweep_speed
+
+        agents_nearby = None
+
 
     def charge(self):
         print("Robot is charging")

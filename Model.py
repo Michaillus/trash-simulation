@@ -2,7 +2,8 @@ import random
 
 from mesa import Model
 from mesa.experimental.continuous_space.continuous_space import ContinuousSpace
-from Agents import Human, Robot
+from Agents import Human, Robot, Trash
+
 
 class TrashCollection(Model):
     def __init__(
@@ -49,10 +50,6 @@ class TrashCollection(Model):
             speed=human_speed,
             littering_rate=littering_rate,
         )
-
-        # Make the model running
-        self.running = True
-
 
     def step(self):
         # First activate all the people
