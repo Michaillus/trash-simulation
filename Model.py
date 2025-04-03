@@ -78,6 +78,14 @@ class TrashCollection(Model):
                 "Trash Cleaned per minute": lambda m: (
                     sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:])
                     if len(m.datacollector.model_vars["Trash Cleaned per Step"]) >= 600 else 0),
+
+                "Ticks with Close Robot (%)": lambda m: (
+                    100 if any(robot.close_to_human for robot in m.agents_by_type.get(Robot, [])) else 0
+                ),
+                "Rate of Disturbance (%)": lambda m: (
+                    (sum(m.datacollector.model_vars["Ticks with Close Robot (%)"]) / len(m.datacollector.model_vars["Ticks with Close Robot (%)"]))
+                    if len(m.datacollector.model_vars["Ticks with Close Robot (%)"]) > 0 else 0
+                )
             }
 
         self.datacollector = DataCollector(model_reporters)

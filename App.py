@@ -157,11 +157,13 @@ produced_trash_per_min_plot = make_plot_component("Trash Produced per minute")
 
 cleaned_trash_plot = make_plot_component("Amount of trash cleaned")
 cleaned_trash_per_min_plot = make_plot_component("Trash Cleaned per minute")
+
+rate_of_disturbance_plot = make_plot_component("Rate of Disturbance (%)")
 # Amount of trash cleaned
 # Instance of a visualization
 page = SolaraViz(
     trash_collection,
-    components=[space_component, produced_trash_plot, produced_trash_per_min_plot, cleaned_trash_plot, cleaned_trash_per_min_plot],
+    components=[space_component, produced_trash_plot, rate_of_disturbance_plot],
     model_params=model_params,
     name="Trash Collection"
 )

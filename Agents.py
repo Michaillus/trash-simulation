@@ -121,6 +121,9 @@ class Robot(DirectionalAgent):
         # Time left to charge
         self.time_to_charge = 0
 
+        #  Whether the robot is close to a human in the current step
+        self.close_to_human = False
+
     # Actions of the robot on each step of the model
     def step(self):
         # Check if robot is charging
@@ -225,14 +228,17 @@ class Robot(DirectionalAgent):
         people_front_close = [agent for agent in agents_very_close if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
         if len(people_front_close) > 0:
+            self.close_to_human = True
             return 0
 
         agents_nearby, _ = self.get_neighbors_in_radius(PERSONAL_SPACE_RADIUS)
         people_front_nearby = [agent for agent in agents_nearby if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
         if len(people_front_nearby) > 0:
+            self.close_to_human = True
             return self.slow_speed
         else:
+            self.close_to_human = False
             return speed
 
 
