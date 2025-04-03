@@ -32,8 +32,7 @@ class Robot(ContinuousSpaceAgent):
                  space: ContinuousSpace,
                  max_energy = 100,
                  max_speed = 10,
-                 capacity = 100,
-                 robot_enabled = True):
+                 capacity = 100):
         super().__init__(space, model)
 
         # Initial position of the robot
@@ -86,6 +85,52 @@ class Robot(ContinuousSpaceAgent):
 
     def charge(self):
         print("Robot is charging")
+
+
+class TrashCar(ContinuousSpaceAgent):
+    """Initialize the robot
+
+    Args:
+        model: Mesa model
+        space: Continue space that the robot is part of
+        time_until_first_sweep: Number of steps until first sweep
+        time_between_sweeps: Number of steps between sweeps
+    """
+    def __init__(self, model,
+                 space: ContinuousSpace,
+                 time_until_first_sweep = 100,
+                 time_between_sweeps = 10):
+
+        super().__init__(space, model)
+
+        # Initialize time until first sweep and time between sweeps.
+        self.time_until_first_sweep = time_until_first_sweep
+        self.TIME_BETWEEN_SWEEPS = time_between_sweeps
+        self.time_until_next_sweep = self.TIME_BETWEEN_SWEEPS
+
+        self.trash_cleaned = 0
+    
+    def step(self):
+        self.time_until_first_sweep -= 1
+        if self.time_until_first_sweep > 0:
+            return
+        elif self.time_until_first_sweep == 0:
+            self.sweep()
+        
+        if self.time_until_next_sweep == 0:
+            self.sweep()
+            self.time_until_next_sweep = self.TIME_BETWEEN_SWEEPS
+        self.time_until_next_sweep -= 1
+
+    def sweep(self):
+        for trash in list(self.model.agents_by_type.get(Trash, [])):
+            self.trash_cleaned += trash.size
+            trash.remove()
+            print("in agents:", self.trash_cleaned)
+        
+        for human in self.model.agents_by_type.get(Human, []):
+            human.wants_to_litter = False
+
 
 # Human agent that walks on the street and litters
 class Human(ContinuousSpaceAgent):
