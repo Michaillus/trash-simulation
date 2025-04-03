@@ -55,7 +55,7 @@ class Robot(ContinuousSpaceAgent):
         self.direction = 90
         self.max_rotation = 360
 
-        # Time passed since the start of a cleaning loop in seconds
+        # Time passed since the start of a cleaning loop in deciseconds
         self.time_passed = 0
         # Expected time it should take to finish a cleaning loop in seconds
         self.expected_time = (1 + 0.05 * model.nr_of_people) * space.width / max_speed
@@ -63,6 +63,9 @@ class Robot(ContinuousSpaceAgent):
     # Actions of the robot on each step of the model
     def step(self):
         self.time_passed += 1
+
+        if self.time_passed % 10 == 0:
+            self.sweep()
 
     """One step of robot movement. The robot turns up to maximum allowed rotation towards target position and moves
     forward with given speed.
@@ -81,10 +84,17 @@ class Robot(ContinuousSpaceAgent):
     Args:
         speed: Speed with which the robot moved in current step
     """
-    def sweep(self, speed):
+    def sweep(self):
+        # Define sweeping radius - length that robot passes in one step(decisecond) with sweeping speed
         sweeping_radius = self.max_sweep_speed
 
-        agents_nearby = None
+        # Get all trash in the radius
+        agents_nearby, _ = self.get_neighbors_in_radius(sweeping_radius)
+        trash_nearby = [agent for agent in agents_nearby if isinstance(agent, Trash)]
+
+        # Remove all the trash nearby
+        for trash in trash_nearby:
+            trash.remove()
 
 
     def charge(self):
