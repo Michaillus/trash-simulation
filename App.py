@@ -66,7 +66,7 @@ model_params = {
 
     "street_length": {
         "type": "SliderInt",
-        "value": 50,
+        "value": 120,
         "label": "Street length (meters)",
         "min": 3,
         "max": 200,
@@ -75,7 +75,7 @@ model_params = {
 
     "street_width": {
         "type": "SliderInt",
-        "value": 10,
+        "value": 15,
         "label": "Street width (meters)",
         "min": 3,
         "max": 20,
@@ -84,7 +84,7 @@ model_params = {
 
     "nr_of_people": {
         "type": "SliderInt",
-        "value": 40,
+        "value": 20,
         "label": "Number of people",
         "min": 1,
         "max": 200,
@@ -103,7 +103,7 @@ model_params = {
     "littering_rate": {
         "type": "SliderInt",
         "value": 5,
-        "label": "People littering rate",
+        "label": "Littering rate (trash units/h)",
         "min": 0,
         "max": 100,
         "step": 1,
@@ -111,8 +111,8 @@ model_params = {
 
     "robot_max_speed_km_h": {
         "type": "SliderInt",
-        "value": 10,
-        "label": "Maximum speed of robot (km/h)",
+        "value": 7,
+        "label": "Maximum robot speed (km/h)",
         "min": 1,
         "max": 50,
         "step": 1,
@@ -120,17 +120,17 @@ model_params = {
 
     "robot_capacity": {
         "type": "SliderInt",
-        "value": 100,
-        "label": "Capacity of robot (units of trash)",
+        "value": 50,
+        "label": "Robot capacity (trash units)",
         "min": 0,
-        "max": 1000,
+        "max": 200,
         "step": 1,
     },
 
     "robot_visibility": {
         "type": "SliderInt",
         "value": 10,
-        "label": "Visibility of robot in meters",
+        "label": "Visibility of robot (meters)",
         "min": 0,
         "max": 50,
         "step": 1,

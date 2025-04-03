@@ -108,8 +108,8 @@ class TrashCollection(Model):
                 self,
                 1,
                 space=self.space,
-                time_until_first_sweep=5, # 216000 (= 6h in deciseconds)
-                time_between_sweeps=10, # 864000 (= 1 day in deciseconds)
+                time_until_first_sweep=100, # 216000 (= 6h in deciseconds)
+                time_between_sweeps=36000, # 864000 (= 1 day in deciseconds)
             )
 
         # Populate the street with nr_of_people people at start
@@ -139,4 +139,4 @@ class TrashCollection(Model):
         # Collect data
         self.datacollector.collect(self)
 
-        print(sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))))
+        # print(sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))))

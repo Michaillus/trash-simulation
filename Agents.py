@@ -61,7 +61,7 @@ class DirectionalAgent(ContinuousSpaceAgent):
     def distance_to(self, agent: ContinuousSpaceAgent):
         return math.sqrt(math.pow(self.position[0] - agent.position[0], 2) + math.pow(self.position[1] - agent.position[1], 2))
 
-    # Get smallest (can be negative) angle between current direction and direction towadrds the position pos
+    # Get smallest (can be negative) angle between current direction and direction towards the position pos
     def get_angle_towards(self, pos):
         angle = 360 * math.atan2(pos[1] - self.position[1], pos[0] - self.position[0]) / (2 * math.pi)
 
@@ -131,9 +131,9 @@ class Robot(DirectionalAgent):
             self.charge()
             return
 
-        # Choosing the next target if there is none
+        # Choosing the next target if there is none and there is place in the robot left
         from Algorithm import choose_next_target
-        if self.target_trash is None:
+        if self.fullness < self.capacity and self.target_trash is None:
             agents_nearby, _ = self.get_neighbors_in_radius(self.visibility)
             trash_in_front = [agent for agent in agents_nearby if isinstance(agent, Trash)
                               and agent.position[0] > self.position[0]]
@@ -163,10 +163,10 @@ class Robot(DirectionalAgent):
         if self.target_trash is not None and self.position[0] > self.target_trash.position[0]:
             self.target_trash = None
 
-
-
+        # Robot is getting emptied and charges when reached the end of loop
         if self.position[0] > (self.space.width + self.X_COORD_OFFSET):
-            self.time_to_charge = 600
+            self.time_to_charge = 3600
+            self.fullness = 0
 
         self.time_passed += 1
 
@@ -254,7 +254,7 @@ class TrashCar(ContinuousSpaceAgent):
     def __init__(self, model,
                  space: ContinuousSpace,
                  time_until_first_sweep = 100,
-                 time_between_sweeps = 10):
+                 time_between_sweeps = 3600):
 
         super().__init__(space, model)
 
@@ -281,7 +281,6 @@ class TrashCar(ContinuousSpaceAgent):
         for trash in list(self.model.agents_by_type.get(Trash, [])):
             self.trash_cleaned += trash.size
             trash.remove()
-            print("in agents:", self.trash_cleaned)
 
         for human in self.model.agents_by_type.get(Human, []):
             human.wants_to_litter = False
