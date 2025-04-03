@@ -3,7 +3,6 @@ import random
 
 from mesa.experimental.continuous_space.continuous_space_agents import ContinuousSpace, ContinuousSpaceAgent
 
-
 EAST = 0
 WEST = 180
 
@@ -213,7 +212,6 @@ class Robot(DirectionalAgent):
         agents_nearby, _ = self.get_neighbors_in_radius(PERSONAL_SPACE_RADIUS)
         people_front_nearby = [agent for agent in agents_nearby if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
-        print(len(agents_nearby), len(people_front_nearby))
         if len(people_front_nearby) > 0:
             return self.slow_speed
         else:

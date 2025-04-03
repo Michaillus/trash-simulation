@@ -51,7 +51,7 @@ def post_process(ax: Axes):
     ax.set_aspect('equal')
     ax.set_xticks([])
     ax.set_yticks([])
-    ax.get_figure().set_size_inches(20,20)
+    ax.get_figure().set_size_inches(15,5)
 
 # Parameters of the model
 model_params = {
