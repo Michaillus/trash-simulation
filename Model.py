@@ -16,6 +16,7 @@ class TrashCollection(Model):
             robot_max_energy = 100,
             robot_max_speed = 10,
             robot_capacity = 100,
+            enable_robot = True,
             seed = None
         ):
 
@@ -43,9 +44,10 @@ class TrashCollection(Model):
             max_energy=robot_max_energy,
             max_speed=robot_max_speed,
             capacity=robot_capacity,
+            robot_enabled= enable_robot
         )
 
-        # Populate the street with half of nr_of_people at start
+        # Populate the street with nr_of_people
         Human.create_agents(
             self,
             nr_of_people,

@@ -129,6 +129,12 @@ model_params = {
         "max": 1000,
         "step": 1,
     },
+
+    "enable_robot": {
+        "type": "Checkbox",
+        "value": True,
+        "label": "Enable Robot",
+    }
 }
 
 # Create an instance of the model
@@ -147,4 +153,4 @@ page = SolaraViz(
     name="Trash Collection"
 )
 
-# page
+page
