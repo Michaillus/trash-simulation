@@ -49,6 +49,7 @@ def post_process(ax: Axes):
     ax.set_aspect('equal')
     ax.set_xticks([])
     ax.set_yticks([])
+    ax.get_figure().set_size_inches(20,20)
 
 # Parameters of the model
 model_params = {
@@ -136,7 +137,7 @@ trash_collection = TrashCollection()
 
 # Component of visualization that shows the space
 space_component = make_space_component(
-    trash_collection_portrayal, draw_grid=False, post_process=post_process, width=1500, height=100
+    trash_collection_portrayal, draw_grid=False, post_process=post_process
 )
 
 # Instance of a visualization
