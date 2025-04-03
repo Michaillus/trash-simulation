@@ -1,9 +1,10 @@
+import pprint
 import random
 
 from mesa import Model
+from mesa.datacollection import DataCollector
 from mesa.experimental.continuous_space.continuous_space import ContinuousSpace
 from Agents import Human, Robot, Trash
-
 
 """Model that simulates a street with people passing along the street and throwing trash.
     A robot patrols the street and sweeps the trash.
@@ -53,6 +54,13 @@ class TrashCollection(Model):
         rng = random.Random(seed)
         self.space = ContinuousSpace(dimensions, torus=False, random=rng)
 
+        # Set up data collection
+        model_reporters={
+                "Amount of trash": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, []))
+            }
+
+        self.datacollector = DataCollector(model_reporters)
+
         # Create robot if the robot is enabled
         if enable_robot:
             Robot.create_agents(
@@ -76,6 +84,7 @@ class TrashCollection(Model):
 
         # Make the model running
         self.running = True
+        self.datacollector.collect(self)
 
 
     def step(self):
@@ -83,3 +92,5 @@ class TrashCollection(Model):
         self.agents_by_type[Human].shuffle_do("step")
         # Then activate the robot
         self.agents_by_type[Robot].do("step")
+        # Collect data
+        self.datacollector.collect(self)

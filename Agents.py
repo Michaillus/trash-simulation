@@ -323,7 +323,7 @@ class Human(DirectionalAgent):
                 self.position[1] = new_y
 
                 dist_to_trash = self.distance_to(self.nearest_trash)
-                if dist_to_trash < 0.1:
+                if dist_to_trash < math.sqrt((x_disp * speed)**2 + (y_disp * speed)**2):
                     self.position[0] = self.nearest_trash.position[0]
                     self.position[1] = self.nearest_trash.position[1]
                     self.nearest_trash.size += 1
