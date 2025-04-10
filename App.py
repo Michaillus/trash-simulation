@@ -102,7 +102,7 @@ model_params = {
 
     "littering_rate": {
         "type": "SliderInt",
-        "value": 5,
+        "value": 10,
         "label": "Littering rate (trash units/h)",
         "min": 0,
         "max": 100,
@@ -153,17 +153,18 @@ space_component = make_space_component(
 
 # Component of visualization that shows the plot
 produced_trash_plot = make_plot_component("Amount of trash on street")
-produced_trash_per_min_plot = make_plot_component("Trash Produced per minute")
+# produced_trash_per_min_plot = make_plot_component("Trash Produced per minute")
+average_trash_plot = make_plot_component("Average amount of trash on street")
 
-cleaned_trash_plot = make_plot_component("Amount of trash cleaned")
-cleaned_trash_per_min_plot = make_plot_component("Trash Cleaned per minute")
+# cleaned_trash_plot = make_plot_component("Amount of trash cleaned")
+# cleaned_trash_per_min_plot = make_plot_component("Trash Cleaned per minute")
 
 rate_of_disturbance_plot = make_plot_component("Rate of Disturbance (%)")
 # Amount of trash cleaned
 # Instance of a visualization
 page = SolaraViz(
     trash_collection,
-    components=[space_component, produced_trash_plot, rate_of_disturbance_plot],
+    components=[space_component, produced_trash_plot, rate_of_disturbance_plot, average_trash_plot],
     model_params=model_params,
     name="Trash Collection"
 )

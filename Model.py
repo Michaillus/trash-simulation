@@ -33,7 +33,7 @@ class TrashCollection(Model):
             street_width = 30,
             nr_of_people = 20,
             human_speed_km_h = 10,
-            littering_rate = 5,
+            littering_rate = 10,
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
             robot_visibility = 10,
@@ -60,24 +60,29 @@ class TrashCollection(Model):
         rng = random.Random(seed)
         self.space = ContinuousSpace(dimensions, torus=False, random=rng)
 
+        self.count = 0
+
         # Set up data collection
         model_reporters={
                 "Amount of trash on street": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, [])),
-                "Trash Produced per Step": lambda m: (
-                    sum(trash.size for trash in m.agents_by_type.get(Trash, []))
-                    - (m.datacollector.model_vars["Amount of trash on street"][-2] if len(m.datacollector.model_vars["Amount of trash on street"]) > 1 else 0)),
-                "Trash Produced per minute": lambda m: (
-                    sum(m.datacollector.model_vars["Trash Produced per Step"][-600:])
-                    if len(m.datacollector.model_vars["Trash Produced per Step"]) >= 600 else 0),
+                # "Trash Produced per Step": lambda m: (
+                #     sum(trash.size for trash in m.agents_by_type.get(Trash, []))
+                #     - (m.datacollector.model_vars["Amount of trash on street"][-2] if len(m.datacollector.model_vars["Amount of trash on street"]) > 1 else 0)),
+                "Average amount of trash on street": lambda m: (
+                    (sum(m.datacollector.model_vars["Amount of trash on street"]) / len(m.datacollector.model_vars["Amount of trash on street"]))
+                    if len(m.datacollector.model_vars["Amount of trash on street"]) > 0 else 0),
+                # "Trash Produced per minute": lambda m: (
+                #     sum(m.datacollector.model_vars["Trash Produced per Step"][-600:])
+                #     if len(m.datacollector.model_vars["Trash Produced per Step"]) >= 600 else 0),
 
-                "Amount of trash cleaned": lambda m: sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))),
-                "Trash Cleaned per Step": lambda m: (
-                    sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, [])))
-                    - (m.datacollector.model_vars["Amount of trash cleaned"][-2] if len(m.datacollector.model_vars["Amount of trash cleaned"]) > 1 else 0)),
+                # "Amount of trash cleaned": lambda m: sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))),
+                # "Trash Cleaned per Step": lambda m: (
+                #     sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, [])))
+                #     - (m.datacollector.model_vars["Amount of trash cleaned"][-2] if len(m.datacollector.model_vars["Amount of trash cleaned"]) > 1 else 0)),
 
-                "Trash Cleaned per minute": lambda m: (
-                    sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:])
-                    if len(m.datacollector.model_vars["Trash Cleaned per Step"]) >= 600 else 0),
+                # "Trash Cleaned per minute": lambda m: (
+                #     sum(m.datacollector.model_vars["Trash Cleaned per Step"][-600:])
+                #     if len(m.datacollector.model_vars["Trash Cleaned per Step"]) >= 600 else 0),
 
                 "Ticks with Close Robot (%)": lambda m: (
                     100 if any(robot.close_to_human for robot in m.agents_by_type.get(Robot, [])) else 0
@@ -108,8 +113,8 @@ class TrashCollection(Model):
                 self,
                 1,
                 space=self.space,
-                time_until_first_sweep=100, # 216000 (= 6h in deciseconds)
-                time_between_sweeps=36000, # 864000 (= 1 day in deciseconds)
+                time_until_first_sweep=216000, # 216000 (= 6h in deciseconds) was 100
+                time_between_sweeps=864000, # 864000 (= 1 day in deciseconds) was 36000
             )
 
         # Populate the street with nr_of_people people at start
@@ -119,7 +124,7 @@ class TrashCollection(Model):
             space=self.space,
             speed=self.human_speed,
             # Littering rate is converted to units of trash per decisecond
-            littering_rate=littering_rate / 36000,
+            littering_rate=littering_rate / (36000 * nr_of_people),
         )
 
         # Make the model running
@@ -128,6 +133,7 @@ class TrashCollection(Model):
 
 
     def step(self):
+
         # First activate all the people
         self.agents_by_type[Human].shuffle_do("step")
         if self.enable_robot:
@@ -139,4 +145,5 @@ class TrashCollection(Model):
         # Collect data
         self.datacollector.collect(self)
 
-        # print(sum(robot.trash_cleaned for robot in list(self.agents_by_type.get(Robot, [])) + list(self.agents_by_type.get(TrashCar, []))))
+        if self.steps == 864000:
+            self.running = False

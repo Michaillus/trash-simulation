@@ -8,7 +8,7 @@ WEST = 180
 
 DIST_FROM_EDGE = 1
 
-LITTER_SEEK_RADIUS = 3
+LITTER_SEEK_RADIUS = 6
 
 STOP_RADIUS = 1
 PERSONAL_SPACE_RADIUS = 2.5
@@ -16,6 +16,11 @@ TIME_TO_PRODUCE_TRASH = 20
 
 MEDIUM_TRASH = 4
 BIG_TRASH = 10
+
+LUNCH_START_TIME = 216000 # Given that simulation starts at 6:00 AM, lunch starts at 12:00 PM (216000 is 6h in deciseconds)
+LUNCH_END_TIME = 288000 # Lunch ends at 2:00 PM
+DINNER_START_TIME = 468000 # Dinner starts at 7:00 PM
+DINNER_END_TIME = 540000 # Dinner ends at 9:00 PM
 
 class DirectionalAgent(ContinuousSpaceAgent):
     """Class with common functionality for agent that have direction.
@@ -165,7 +170,7 @@ class Robot(DirectionalAgent):
 
         # Robot is getting emptied and charges when reached the end of loop
         if self.position[0] > (self.space.width + self.X_COORD_OFFSET):
-            self.time_to_charge = 3600
+            self.time_to_charge = 36000
             self.fullness = 0
 
         self.time_passed += 1
@@ -318,7 +323,7 @@ class Human(DirectionalAgent):
         # Walking speed of the human
         self.speed = speed
         # Littering rate of the human
-        self.littering_rate = littering_rate
+        self.initial_littering_rate = littering_rate
 
 
         # Destination of the human depending on direction
@@ -339,8 +344,14 @@ class Human(DirectionalAgent):
         self.wait -= 1
         self.move(self.speed)
 
+        # Littering rate is increased during lunch and dinner time
+        if LUNCH_START_TIME <= self.model.steps < LUNCH_END_TIME or DINNER_START_TIME <= self.model.steps < DINNER_END_TIME:
+            littering_rate = self.initial_littering_rate * 3
+        else:
+            littering_rate = self.initial_littering_rate
+
         # Litter
-        if random.uniform(0, 1) < self.littering_rate:
+        if random.uniform(0, 1) < littering_rate:
             self.wants_to_litter = True
             self.nearest_trash = self.get_nearest_trash(LITTER_SEEK_RADIUS)
 
@@ -359,7 +370,7 @@ class Human(DirectionalAgent):
                     1,
                     space=self.space,
                     speed=self.speed,
-                    littering_rate=self.littering_rate,
+                    littering_rate=self.initial_littering_rate,
                     x_coord=random_x_coord
                 )
             self.remove()
