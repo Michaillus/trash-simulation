@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     # Plot the pie chart
     plt.pie(sizes, autopct='%1.1f%%', startangle=180, colors=colors, labels=labels, radius=0.1)
-    # plt.pie(sizes, autopct='', startangle=180, colors=colors, labels=labels, radius=0.1)
+
     # Set aspect ratio to make the pie chart circular
     plt.axis('equal')
 

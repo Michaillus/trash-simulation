@@ -29,6 +29,6 @@ if __name__ == "__main__":
 
     plt.legend()
     plt.ylabel('Units of Trash')
-    plt.title('Amount of Trash on Low Traffic Street')
+    plt.title('Amount of Trash on Street')
     plt.grid(True)
     plt.show()
