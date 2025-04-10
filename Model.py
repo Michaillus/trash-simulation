@@ -63,11 +63,13 @@ class TrashCollection(Model):
 
         self.count = 0
 
+        # Required for simulating current cleaning strategy
         self.total_trash_produced = 0
 
         # Set up data collection
         model_reporters={
                 "Amount of trash on street": lambda m: sum(trash.size for trash in m.agents_by_type.get(Trash, [])),
+                # Does not accurately reflect total trash produced, perfectly reflects amount of trash there would be using trashcar
                 "Total trash produced": lambda m: m.total_trash_produced if m.steps < 863900 else 0,
                 "Robot Disturbance": lambda m: (
                     sum(robot.close_to_human for robot in m.agents_by_type.get(Robot, [])) if len(m.agents_by_type.get(Robot, [])) > 0 else 0
@@ -128,7 +130,7 @@ class TrashCollection(Model):
         # Collect data
         self.datacollector.collect(self)
 
-        if self.steps == 864000: # 864000
+        if self.steps == 864000: # 864000 number of steps in 24 hours (1 day)
             self.running = False
             df = self.datacollector.get_model_vars_dataframe()
             df.to_csv(f"logs\\{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv", index_label="Step") # file name format: YYYY-MM-DD_HH-MM-SS

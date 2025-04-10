@@ -4,7 +4,6 @@ from matplotlib.axes import Axes
 from mesa.visualization import (
     SolaraViz,
     make_space_component,
-    make_plot_component
 )
 
 # Function to portray the agents. Defines visual properties of each agent.
@@ -150,12 +149,6 @@ trash_collection = TrashCollection()
 space_component = make_space_component(
     trash_collection_portrayal, draw_grid=False, post_process=post_process
 )
-
-# Component of visualization that shows the plot
-# produced_trash_plot = make_plot_component("Amount of trash on street")
-# robot_proximity_plot = make_plot_component("Ticks with Close Robot (%)")
-# robot_present_plot = make_plot_component("Ticks with Robot present")
-# total_trash_plot = make_plot_component("Total trash produced")
 
 # Instance of a visualization
 page = SolaraViz(

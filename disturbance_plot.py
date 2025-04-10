@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # Load csv
-    df = pd.read_csv('logs//crowded_street.csv')
+    df = pd.read_csv('logs//low_traffic_street.csv') # Enter csv path of your choice
 
     # Filter rows where Robot is present (Robot present == 1)
     df_robot_present = df[df['Ticks with Robot present'] == 1]
@@ -15,18 +15,20 @@ if __name__ == "__main__":
     robot_far_count = (df_robot_present['Robot Disturbance'] == 0).sum()
 
     # Prepare data for the pie chart
-    labels = ['Robot within 1m\nof person', 'Robot within 2.5m\nof person', 'Robot further than 2.5m\nfrom any person']
+    labels = ['Contact (< 1m)', 'Close (< 2.5m)', 'Distant (>= 2.5m)']
+    
     sizes = [robot_contact_count, robot_nearby_count, robot_far_count]
     colors = ['#ff9999','#66b3ff', '#99ff99']
 
-    # Plot the pie chart
-    plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=315, colors=colors)
 
+    # Plot the pie chart
+    plt.pie(sizes, autopct='%1.1f%%', startangle=180, colors=colors, labels=labels, radius=0.1)
+    # plt.pie(sizes, autopct='', startangle=180, colors=colors, labels=labels, radius=0.1)
     # Set aspect ratio to make the pie chart circular
     plt.axis('equal')
 
     # Title for the pie chart
-    plt.title('Robot Disturbance in % (When Robot is Present)')
+    plt.title('Robot Disturbance')
 
     # Show the plot
     plt.show()

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 if __name__ == "__main__":
     # Load csv
-    df = pd.read_csv('logs//crowded_street.csv')
+    df = pd.read_csv('logs//low_traffic_street.csv') # Enter csv path of your choice
 
 
     # Filter data for every 600th step (every minute)
@@ -29,6 +29,6 @@ if __name__ == "__main__":
 
     plt.legend()
     plt.ylabel('Units of Trash')
-    plt.title('Amount of Trash on Street over 24h Period')
+    plt.title('Amount of Trash on Low Traffic Street')
     plt.grid(True)
     plt.show()

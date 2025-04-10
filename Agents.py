@@ -126,7 +126,7 @@ class Robot(DirectionalAgent):
         # Time left to charge
         self.time_to_charge = 0
 
-        # Presence
+        # Presence feild required for pie chart of disturbance measure 
         self.present = True
 
         #  Whether the robot is close to a human in the current step
