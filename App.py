@@ -152,19 +152,15 @@ space_component = make_space_component(
 )
 
 # Component of visualization that shows the plot
-produced_trash_plot = make_plot_component("Amount of trash on street")
-# produced_trash_per_min_plot = make_plot_component("Trash Produced per minute")
-average_trash_plot = make_plot_component("Average amount of trash on street")
+# produced_trash_plot = make_plot_component("Amount of trash on street")
+# robot_proximity_plot = make_plot_component("Ticks with Close Robot (%)")
+# robot_present_plot = make_plot_component("Ticks with Robot present")
+# total_trash_plot = make_plot_component("Total trash produced")
 
-# cleaned_trash_plot = make_plot_component("Amount of trash cleaned")
-# cleaned_trash_per_min_plot = make_plot_component("Trash Cleaned per minute")
-
-rate_of_disturbance_plot = make_plot_component("Rate of Disturbance (%)")
-# Amount of trash cleaned
 # Instance of a visualization
 page = SolaraViz(
     trash_collection,
-    components=[space_component, produced_trash_plot, rate_of_disturbance_plot, average_trash_plot],
+    components=[space_component],
     model_params=model_params,
     name="Trash Collection"
 )

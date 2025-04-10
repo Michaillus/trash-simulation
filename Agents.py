@@ -126,8 +126,11 @@ class Robot(DirectionalAgent):
         # Time left to charge
         self.time_to_charge = 0
 
+        # Presence
+        self.present = True
+
         #  Whether the robot is close to a human in the current step
-        self.close_to_human = False
+        self.close_to_human = 0
 
     # Actions of the robot on each step of the model
     def step(self):
@@ -172,6 +175,7 @@ class Robot(DirectionalAgent):
         if self.position[0] > (self.space.width + self.X_COORD_OFFSET):
             self.time_to_charge = 36000
             self.fullness = 0
+            self.present = False
 
         self.time_passed += 1
 
@@ -226,6 +230,7 @@ class Robot(DirectionalAgent):
         if self.time_to_charge == 0:
             self.position[0] = -self.X_COORD_OFFSET
             self.position[1] = self.space.height / 2
+            self.present = True
 
 
     def adjust_speed(self, speed):
@@ -233,17 +238,17 @@ class Robot(DirectionalAgent):
         people_front_close = [agent for agent in agents_very_close if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
         if len(people_front_close) > 0:
-            self.close_to_human = True
+            self.close_to_human = 2
             return 0
 
         agents_nearby, _ = self.get_neighbors_in_radius(PERSONAL_SPACE_RADIUS)
         people_front_nearby = [agent for agent in agents_nearby if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
         if len(people_front_nearby) > 0:
-            self.close_to_human = True
+            self.close_to_human = 1
             return self.slow_speed
         else:
-            self.close_to_human = False
+            self.close_to_human = 0
             return speed
 
 
@@ -438,7 +443,7 @@ class Human(DirectionalAgent):
                 if dist_to_trash < math.sqrt((x_disp * speed)**2 + (y_disp * speed)**2):
                     self.position[0] = self.nearest_trash.position[0]
                     self.position[1] = self.nearest_trash.position[1]
-                    self.nearest_trash.size += 1
+                    self.nearest_trash.increase()
                     self.nearest_trash = None
                     self.wants_to_litter = False
                     self.wait = TIME_TO_PRODUCE_TRASH
@@ -522,11 +527,13 @@ class Trash(ContinuousSpaceAgent):
         self.position[0] = x_coord
         self.position[1] = y_coord
         # Size of the trash spot. One unit of trash can be considered as one cup or food packaging
-        self.size = 1
+        self.size = 0
+        self.increase()
 
     # Increase amount of trash in the spot by one unit
     def increase(self):
         self.size += 1
+        self.model.total_trash_produced += 1
 
 
 def sign(x):
