@@ -65,10 +65,10 @@ model_params = {
 
     "street_length": {
         "type": "SliderInt",
-        "value": 120,
+        "value": 150,
         "label": "Street length (meters)",
-        "min": 3,
-        "max": 200,
+        "min": 100,
+        "max": 300,
         "step": 1,
     },
 
@@ -76,7 +76,7 @@ model_params = {
         "type": "SliderInt",
         "value": 15,
         "label": "Street width (meters)",
-        "min": 3,
+        "min": 5,
         "max": 20,
         "step": 1,
     },
@@ -101,8 +101,8 @@ model_params = {
 
     "littering_rate": {
         "type": "SliderInt",
-        "value": 10,
-        "label": "Littering rate (trash units/h)",
+        "value": 12,
+        "label": "Littering rate (trash units/day)",
         "min": 0,
         "max": 100,
         "step": 1,
@@ -121,7 +121,7 @@ model_params = {
         "type": "SliderInt",
         "value": 50,
         "label": "Robot capacity (trash units)",
-        "min": 0,
+        "min": 1,
         "max": 200,
         "step": 1,
     },
@@ -130,8 +130,25 @@ model_params = {
         "type": "SliderInt",
         "value": 10,
         "label": "Visibility of robot (meters)",
-        "min": 0,
+        "min": 1,
         "max": 50,
+        "step": 1,
+    },
+
+    "off_screen_time": {
+        "type": "SliderInt",
+        "value": 30,
+        "label": "Robot time out of screen (minutes)",
+        "min": 1,
+        "max": 180,
+    },
+
+    "full_simulation_time": {
+        "type": "SliderInt",
+        "value": 24,
+        "label": "Full simulation time (hours)",
+        "min": 1,
+        "max": 72,
         "step": 1,
     },
 

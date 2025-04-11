@@ -11,7 +11,7 @@ DIST_FROM_EDGE = 1
 LITTER_SEEK_RADIUS = 6
 
 STOP_RADIUS = 1
-PERSONAL_SPACE_RADIUS = 2.5
+SLOW_DOWN_RADIUS = 2.5
 TIME_TO_PRODUCE_TRASH = 20
 
 MEDIUM_TRASH = 4
@@ -21,6 +21,12 @@ LUNCH_START_TIME = 216000 # Given that simulation starts at 6:00 AM, lunch start
 LUNCH_END_TIME = 288000 # Lunch ends at 2:00 PM
 DINNER_START_TIME = 468000 # Dinner starts at 7:00 PM
 DINNER_END_TIME = 540000 # Dinner ends at 9:00 PM
+
+# Number of steps in second, minute, hour, day. One step is equivalent to decisecond = 1/10 second
+STEPS_IN_SECONDS = 10
+STEPS_IN_MINUTE = 60*STEPS_IN_SECONDS
+STEPS_IN_HOUR = 60*STEPS_IN_MINUTE
+STEPS_IN_DAY = 24*STEPS_IN_HOUR
 
 class DirectionalAgent(ContinuousSpaceAgent):
     """Class with common functionality for agent that have direction.
@@ -92,7 +98,8 @@ class Robot(DirectionalAgent):
                  space: ContinuousSpace,
                  max_speed = 10,
                  capacity = 100,
-                 visibility = 10):
+                 visibility = 10,
+                 off_screen_steps = STEPS_IN_HOUR):
 
         # Robot initially looking rightwards.
         super().__init__(space, model, initial_direction=EAST, max_rotation=2)
@@ -113,6 +120,9 @@ class Robot(DirectionalAgent):
         # Radius (in meters) in which robot can recognize trash and people
         self.visibility = visibility
 
+        # Number of steps robot is off-screen - "charging" - after it reaches the end of the street
+        self.off_screen_steps = off_screen_steps
+
         # Time passed since the start of a cleaning loop in deciseconds
         self.time_passed = 0
         # Expected time it should take to finish a cleaning loop in seconds
@@ -126,7 +136,7 @@ class Robot(DirectionalAgent):
         # Time left to charge
         self.time_to_charge = 0
 
-        # Presence feild required for pie chart of disturbance measure 
+        # Presence field required for pie chart of disturbance measure
         self.present = True
 
         #  Whether the robot is close to a human in the current step
@@ -173,7 +183,7 @@ class Robot(DirectionalAgent):
 
         # Robot is getting emptied and charges when reached the end of loop
         if self.position[0] > (self.space.width + self.X_COORD_OFFSET):
-            self.time_to_charge = 36000
+            self.time_to_charge = self.off_screen_steps
             self.fullness = 0
             self.present = False
 
@@ -241,7 +251,7 @@ class Robot(DirectionalAgent):
             self.close_to_human = 2
             return 0
 
-        agents_nearby, _ = self.get_neighbors_in_radius(PERSONAL_SPACE_RADIUS)
+        agents_nearby, _ = self.get_neighbors_in_radius(SLOW_DOWN_RADIUS)
         people_front_nearby = [agent for agent in agents_nearby if isinstance(agent, Human)
                               and abs(self.get_angle_towards(agent.position)) <= 90]
         if len(people_front_nearby) > 0:
@@ -406,7 +416,7 @@ class Human(DirectionalAgent):
 
             # Update direction if there is a human nearby, angle of new direction also depends on human's destination
             # (takes priority over moving away from the edge)
-            nearest_neighbor = self.get_nearest_human_in_front(PERSONAL_SPACE_RADIUS)
+            nearest_neighbor = self.get_nearest_human_in_front(SLOW_DOWN_RADIUS)
             if nearest_neighbor:
                 
                 # Depending on position of nearest human relative to self, move 30 degrees away from neighbor

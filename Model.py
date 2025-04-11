@@ -7,6 +7,12 @@ from mesa.experimental.continuous_space.continuous_space import ContinuousSpace
 
 from Agents import Human, Robot, Trash, TrashCar
 
+# Number of steps in second, minute, hour, day. One step is equivalent to decisecond = 1/10 second
+STEPS_IN_SECONDS = 10
+STEPS_IN_MINUTE = 60*STEPS_IN_SECONDS
+STEPS_IN_HOUR = 60*STEPS_IN_MINUTE
+STEPS_IN_DAY = 24*STEPS_IN_HOUR
+
 """Model that simulates a street with people passing along the street and throwing trash.
     A robot patrols the street and sweeps the trash.
     One step of the model is a decisecond (0.1 second) in real life.
@@ -23,6 +29,8 @@ from Agents import Human, Robot, Trash, TrashCar
         robot_max_speed_km_h: Maximum speed of the robot in kilometers/hour
         robot_capacity: Capacity of the robot in units of trash
         robot_visibility: Radius (in meters) in which robot can identify trash and people
+        off_screen_time: Time in minutes that robot is out of the simulation when it reaches the end of the street
+        full_simulation_time: The time of simulation in hours after which it stops
         enable_robot: If robot should be enabled and collect trash or stay idle
         
         seed: Seed for random number generator
@@ -38,6 +46,8 @@ class TrashCollection(Model):
             robot_max_speed_km_h = 10,
             robot_capacity = 100,
             robot_visibility = 10,
+            off_screen_time = 30,
+            full_simulation_time = 24,
             enable_robot = True,
             seed = None
         ):
@@ -55,6 +65,9 @@ class TrashCollection(Model):
         # Speed of humans in meters per decisecond
         self.human_speed = human_speed_km_h / 36
         self.littering_rate = littering_rate
+
+        # Number of hours that simulation runs in total
+        self.full_simulation_time = full_simulation_time
 
         # Create a continuous space
         dimensions = [[0, street_length], [0, street_width]]
@@ -93,14 +106,15 @@ class TrashCollection(Model):
                 max_speed=robot_max_speed_km_h / 36,
                 capacity=robot_capacity,
                 visibility=robot_visibility,
+                off_screen_steps=off_screen_time * STEPS_IN_MINUTE,
             )
         else:
             TrashCar.create_agents(
                 self,
                 1,
                 space=self.space,
-                time_until_first_sweep=863900, # 216000 (= 6h in deciseconds) was 100
-                time_between_sweeps=864000, # 864000 (= 1 day in deciseconds) was 36000
+                time_until_first_sweep=6*STEPS_IN_HOUR, # 6 hours in steps = deciseconds
+                time_between_sweeps=STEPS_IN_DAY, # 1 day in steps = deciseconds
             )
 
         # Populate the street with nr_of_people people at start
@@ -109,8 +123,8 @@ class TrashCollection(Model):
             nr_of_people,
             space=self.space,
             speed=self.human_speed,
-            # Littering rate is converted to units of trash per decisecond
-            littering_rate=littering_rate / 720000, # This number felt right (end of justification)
+            # Littering rate is converted to average number of units of trash thrown by a person per step
+            littering_rate=littering_rate / STEPS_IN_DAY,
         )
 
         # Make the model running
@@ -130,7 +144,7 @@ class TrashCollection(Model):
         # Collect data
         self.datacollector.collect(self)
 
-        if self.steps == 864000: # 864000 number of steps in 24 hours (1 day)
+        if self.steps == self.full_simulation_time * STEPS_IN_HOUR: # 864000 number of steps in 24 hours (1 day)
             self.running = False
             df = self.datacollector.get_model_vars_dataframe()
             df.to_csv(f"logs\\{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv", index_label="Step") # file name format: YYYY-MM-DD_HH-MM-SS
